@@ -20,12 +20,15 @@ public class RepairChestPlayerListener extends PlayerListener {
 	}
 	
 	public void onPlayerInteract (PlayerInteractEvent event){
+		if (! plugin.isEnabled()){
+			return;
+		}
 		Player player = event.getPlayer();
 		Block block = event.getClickedBlock();
 			if (block != null){
 			Material blockType = block.getType();
 			if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK)){
-				if (blockType.equals(Material.SIGN_POST)|| blockType.equals(Material.WALL_SIGN)){
+				if (blockType.equals(Material.WALL_SIGN)){
 					Sign sign = (Sign) block.getState();
 					if (sign.getLine(0).equalsIgnoreCase("[Repair]")){
 						if (plugin.permit(player, "repairchest.use")){
@@ -36,14 +39,17 @@ public class RepairChestPlayerListener extends PlayerListener {
 								if (calculateDamage(inventory) > 0){
 									ItemStack inHand = player.getItemInHand();
 									Material inHandType = inHand.getType();
-									if (inHandType.equals(Material.GOLD_INGOT)){
+									if (inHandType.equals(Material.getMaterial(plugin.currency))){
 										int cost = calculateCost(inventory);
 										if (cost < 1){
 											cost = 1;
 										}
 										int goldPile = inHand.getAmount();
 										int afterRepair = goldPile - cost;
-										
+										if (afterRepair < 0){
+											player.sendMessage(ChatColor.DARK_RED+"You can't afford this repair!");
+											return;
+										}
 
 										boolean charge = false;
 										for (int i = 0; i < inventory.length; i++){
@@ -56,6 +62,7 @@ public class RepairChestPlayerListener extends PlayerListener {
 										}
 										if (charge){
 											plugin.babble("Charging for the repair...");
+											player.sendMessage(ChatColor.GREEN+"Ding!  Repair complete!");
 											if (afterRepair <= 0){
 												plugin.babble("Poor bastard is now broke");
 												player.setItemInHand(null);
@@ -90,7 +97,7 @@ public class RepairChestPlayerListener extends PlayerListener {
 
 			}
 			else if (event.getAction().equals(Action.LEFT_CLICK_BLOCK)){
-				if (blockType.equals(Material.SIGN_POST)|| blockType.equals(Material.WALL_SIGN)){
+				if (blockType.equals(Material.WALL_SIGN)){
 					Sign sign = (Sign) block.getState();
 					if (sign.getLine(0).equalsIgnoreCase("[Repair]")){
 						if (plugin.permit(player, "repairchest.use")){
@@ -98,9 +105,9 @@ public class RepairChestPlayerListener extends PlayerListener {
 							if (below.getType().equals(Material.CHEST)){
 								Chest chest = (Chest) below.getState();
 								ItemStack[] inventory = chest.getInventory().getContents();
-								int cost = calculateCost(inventory);
-								int damage = calculateDamage(inventory);
-								player.sendMessage(damage+" points of damage costs "+cost+"g to repair.");
+								int cost = this.calculateCost(inventory);
+								int damage = this.calculateDamage(inventory);
+								player.sendMessage(damage+" point"+plugin.plural(damage)+" of damage costs "+cost+plugin.currencyName+" to repair.");
 							}
 						}
 						else {
@@ -124,7 +131,7 @@ public class RepairChestPlayerListener extends PlayerListener {
 	private int calculateCost(ItemStack[] inventory) {
 		int damage = calculateDamage(inventory);
 		if (damage > 0){
-			int price = damage / 100;
+			int price = (int) (damage * plugin.baseCost);
 			if (price < 1){
 				price = 1;
 			}
