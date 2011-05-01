@@ -1,0 +1,3 @@
+name: RepairChest
+main: com.webkonsept.bukkit.repairchest.RepairChest
+version: 0.1
