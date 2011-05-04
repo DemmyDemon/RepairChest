@@ -44,8 +44,8 @@ public class RepairChestPlayerListener extends PlayerListener {
 										if (cost < 1){
 											cost = 1;
 										}
-										int goldPile = inHand.getAmount();
-										int afterRepair = goldPile - cost;
+										int currencyPile = inHand.getAmount();
+										int afterRepair = currencyPile - cost;
 										if (afterRepair < 0){
 											player.sendMessage(ChatColor.DARK_RED+"You can't afford this repair!");
 											return;
@@ -69,16 +69,16 @@ public class RepairChestPlayerListener extends PlayerListener {
 											}
 											else {
 												plugin.babble("rich-- = "+afterRepair);
-												player.setItemInHand(new ItemStack(Material.GOLD_INGOT,afterRepair));
+												player.setItemInHand(new ItemStack(plugin.currency,afterRepair));
 											}
 										}
 										else {
 											plugin.babble("Didn't fix anything.");
-											player.setItemInHand(new ItemStack(Material.GOLD_INGOT,goldPile));
+											player.setItemInHand(new ItemStack(plugin.currency,currencyPile));
 										}
 									}
 									else {
-										player.sendMessage(ChatColor.DARK_RED+"Right-click the sign with a gold ingot in your hand to pay.");
+										player.sendMessage(ChatColor.DARK_RED+"Right-click the sign with a currency item ("+plugin.currency+") in your hand to pay.");
 									}
 								}
 								else {
