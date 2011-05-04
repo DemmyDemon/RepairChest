@@ -78,7 +78,7 @@ public class RepairChestPlayerListener extends PlayerListener {
 										}
 									}
 									else {
-										player.sendMessage(ChatColor.DARK_RED+"Right-click the sign with a currency item ("+plugin.currency+") in your hand to pay.");
+										player.sendMessage(ChatColor.DARK_RED+"Right-click the sign with a currency item ("+Material.getMaterial(plugin.currency).name()+") in your hand to pay.");
 									}
 								}
 								else {
