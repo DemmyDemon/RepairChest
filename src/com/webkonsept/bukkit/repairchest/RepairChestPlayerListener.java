@@ -8,6 +8,7 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.inventory.ItemStack;
@@ -18,11 +19,25 @@ public class RepairChestPlayerListener extends PlayerListener {
 	RepairChestPlayerListener (RepairChest instance) {
 		plugin = instance;
 	}
+	public void onPlayerCommandPreprocess (PlayerCommandPreprocessEvent event){
+		if (! plugin.isEnabled()) return;
+		if (event.getMessage().equalsIgnoreCase("/repairchesttest")){
+			event.setCancelled(true);
+			if (plugin.permit(event.getPlayer(), "repairchest.testing")){
+				ItemStack inHand = event.getPlayer().getItemInHand();
+				if(inHand.getMaxStackSize() == 1 && inHand.getType().getMaxDurability() > 100){
+					inHand.setDurability((short)100);
+				}
+			}
+			else {
+				event.getPlayer().sendMessage(ChatColor.RED+"Sorry, you can't do that.");
+			}
+		}
+	}
 	
 	public void onPlayerInteract (PlayerInteractEvent event){
-		if (! plugin.isEnabled()){
-			return;
-		}
+		if (! plugin.isEnabled()) return;
+		
 		Player player = event.getPlayer();
 		Block block = event.getClickedBlock();
 			if (block != null){
@@ -46,17 +61,54 @@ public class RepairChestPlayerListener extends PlayerListener {
 										}
 										int goldPile = inHand.getAmount();
 										int afterRepair = goldPile - cost;
-										if (afterRepair < 0){
+										boolean charge = false;
+										int repairCredits = (int)(goldPile / plugin.baseCost);
+										
+										if (afterRepair < 0 && ! plugin.partialRepair){
 											player.sendMessage(ChatColor.DARK_RED+"You can't afford this repair!");
 											return;
 										}
-
-										boolean charge = false;
-										for (int i = 0; i < inventory.length; i++){
-											if (inventory[i] != null && inventory[i].getType().getMaxStackSize() == 1){
-												if (inventory[i].getDurability() > 0){
-													inventory[i].setDurability((short)0);
-													charge = true;
+										else if (afterRepair < 0 && plugin.partialRepair){
+											afterRepair = 0;	
+											if (plugin.distributePartialRepair){
+												int itemsInChest = numberOfRepairableItems(inventory);
+												int repairPerItem = repairCredits / itemsInChest;
+												plugin.babble("Repair per item is "+repairPerItem+" for "+itemsInChest+" items, "+repairCredits+" credits.");
+												for (int i = 0; i < inventory.length; i++){
+													if (inventory[i] != null && inventory[i].getType().getMaxStackSize() == 1){
+														if (inventory[i].getDurability() > 0){
+															inventory[i].setDurability((short) (inventory[i].getDurability() - repairPerItem));
+															charge = true;
+												
+														}
+													}
+												}
+											}
+											else {
+												for (int i = 0; i < inventory.length;i++){
+													if (inventory[i] != null && inventory[i].getType().getMaxStackSize() == 1){
+														int damage = inventory[i].getDurability();
+														if (damage <= repairCredits){
+															repairCredits -= damage;
+															charge = true;
+															inventory[i].setDurability((short) 0);
+														}
+														else {
+															inventory[i].setDurability((short) (inventory[i].getDurability() - repairCredits));
+															charge = true;
+															break;
+														}
+													}
+												}
+											}
+										}
+										else { // That is, partial repair is OFF, and the player can afford a full one
+											for (int i = 0; i < inventory.length; i++){
+												if (inventory[i] != null && inventory[i].getType().getMaxStackSize() == 1){
+													if (inventory[i].getDurability() > 0){
+														inventory[i].setDurability((short)0);
+														charge = true;
+													}
 												}
 											}
 										}
@@ -118,6 +170,18 @@ public class RepairChestPlayerListener extends PlayerListener {
 			}
 		}
 	}
+	private int numberOfRepairableItems(ItemStack[] inventory) {
+		int repairable = 0;
+		for (int i = 0; i < inventory.length; i++){
+			if (inventory[i] != null && inventory[i].getType().getMaxStackSize() == 1){
+				if (inventory[i].getDurability() > 0){
+					repairable++;
+				}
+			}
+		}
+		return repairable;
+	}
+
 	private int calculateDamage(ItemStack[] inventory){
 		int damage = 0;
 		for (int i = 0; i < inventory.length; i++){

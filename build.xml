@@ -31,5 +31,11 @@
 			tofile="W:/server/plugins/${ant.project.name}.jar"
 		/>
 	</target>
+	<target name="testing" depends="jar,clean">
+		<copy
+			file="${ant.project.name}.jar"
+			tofile="C:/Users/Fredrik/Desktop/Minecraft/Server/plugins/${ant.project.name}.jar"
+		/>
+	</target>
   	<target name="buildJar" depends="jar,clean" />
 </project>

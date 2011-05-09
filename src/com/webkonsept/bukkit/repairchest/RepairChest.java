@@ -32,10 +32,13 @@ public class RepairChest extends JavaPlugin {
 	public String currencyName ="g";
 	public double baseCost = 0.01; // 100 damage = 1 this.currency
 	private boolean verbose = false;
+	public boolean partialRepair = false;
+	public boolean distributePartialRepair = true;
 	
 	@Override
 	public void onDisable() {
 		if (! configFile.exists()){
+			configFile.mkdir();
 			config.save();
 		}
 		this.out("Disabled");
@@ -48,6 +51,8 @@ public class RepairChest extends JavaPlugin {
 		currency = config.getInt("currency",266);
 		baseCost = config.getDouble("baseCost",0.01);
 		currencyName = config.getString("currencyName","g");
+		partialRepair = config.getBoolean("partialRepair", false);
+		distributePartialRepair = config.getBoolean("distributePartialRepair", true);
 		String currencyString = Material.getMaterial(currency).toString();
 		this.out("Enabled!  currency: "+currencyString+"   baseCost: "+baseCost);
 		this.babble("VERBOSE MODE!  This will get spammy!");
@@ -55,9 +60,11 @@ public class RepairChest extends JavaPlugin {
 			fallbackPermissions.put("repairchest.create",false);
 			fallbackPermissions.put("repairchest.use",true);
 			fallbackPermissions.put("repairchest.destroy",false);
+			fallbackPermissions.put("repairchest.testing", false);
 		}
 		PluginManager pm =getServer().getPluginManager();
 		pm.registerEvent(Event.Type.SIGN_CHANGE,blockListener,Priority.Normal,this);
+		pm.registerEvent(Event.Type.PLAYER_COMMAND_PREPROCESS, playerListener, Priority.Normal, this);
 		pm.registerEvent(Event.Type.PLAYER_INTERACT,playerListener,Priority.Normal,this);
 		pm.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Priority.Normal, this);
 	}
