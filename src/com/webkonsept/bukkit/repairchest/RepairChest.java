@@ -26,6 +26,7 @@ public class RepairChest extends JavaPlugin {
 	private RepairChestBlockListener blockListener = new RepairChestBlockListener(this);
 	private HashMap<String,Boolean> fallbackPermissions = new HashMap<String,Boolean>();
 	private File configFile = new File("plugins/RepairChest/settings.yml");
+	private File configDir = new File("plugins/RepairChest/");
 	public Configuration config = new Configuration(configFile);
  
 	public Integer currency = 266; // Gold Ingot
@@ -37,10 +38,12 @@ public class RepairChest extends JavaPlugin {
 	
 	@Override
 	public void onDisable() {
-		if (! configFile.exists()){
-			configFile.mkdir();
-			config.save();
+		if (!configFile.exists()){
+			if (!configDir.exists()){
+				configDir.mkdir();
+			}
 		}
+		config.save();
 		this.out("Disabled");
 	}
 
@@ -54,6 +57,12 @@ public class RepairChest extends JavaPlugin {
 		partialRepair = config.getBoolean("partialRepair", false);
 		distributePartialRepair = config.getBoolean("distributePartialRepair", true);
 		String currencyString = Material.getMaterial(currency).toString();
+		if (!configFile.exists()){
+			if (!configDir.exists()){
+				configDir.mkdir();
+			}
+			config.save();
+		}
 		this.out("Enabled!  currency: "+currencyString+"   baseCost: "+baseCost);
 		this.babble("VERBOSE MODE!  This will get spammy!");
 		if(!setupPermissions()){
