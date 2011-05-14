@@ -22,8 +22,11 @@ public class RepairChest extends JavaPlugin {
 	private Logger log = Logger.getLogger("Minecraft");
 	private PermissionHandler Permissions;
 	private boolean usePermissions;
+	
 	private RepairChestPlayerListener playerListener = new RepairChestPlayerListener(this);
-	private RepairChestBlockListener blockListener = new RepairChestBlockListener(this);
+	public RepairChestBlockListener blockListener = new RepairChestBlockListener(this);
+	private RepairChestEntityListener entityListener = new RepairChestEntityListener(this);
+	
 	private HashMap<String,Boolean> fallbackPermissions = new HashMap<String,Boolean>();
 	private File configFile = new File("plugins/RepairChest/settings.yml");
 	private File configDir = new File("plugins/RepairChest/");
@@ -65,6 +68,8 @@ public class RepairChest extends JavaPlugin {
 		pm.registerEvent(Event.Type.PLAYER_COMMAND_PREPROCESS, playerListener, Priority.Normal, this);
 		pm.registerEvent(Event.Type.PLAYER_INTERACT,playerListener,Priority.Normal,this);
 		pm.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Priority.Normal, this);
+		pm.registerEvent(Event.Type.BLOCK_BURN, blockListener, Priority.Normal, this);
+		pm.registerEvent(Event.Type.ENTITY_EXPLODE,entityListener,Priority.Normal,this);
 	}
 	public boolean permit(Player player,String permission){ 
 		

@@ -9,6 +9,8 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockBurnEvent;
+import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.SignChangeEvent;
 
@@ -45,6 +47,8 @@ public class RepairChestBlockListener extends BlockListener {
 			}
 		}
 	}
+	
+	@Override
 	public void onBlockBreak (BlockBreakEvent event){
 		if (! plugin.isEnabled()){
 			return;  // If the plugin is disabled, it should not be doing anything.
@@ -55,9 +59,16 @@ public class RepairChestBlockListener extends BlockListener {
 		event.setCancelled( ! this.autorizeRemoval(event.getBlock(), event.getPlayer()));
 	}
 	
+	@Override
+	public void onBlockBurn (BlockBurnEvent event){
+		if (! plugin.isEnabled()) return;
+		if (event.isCancelled()) return;
+		event.setCancelled( ! this.autorizeRemoval(event.getBlock(),null)); // Null because this event no player.  Ever.
+	}
+	
 	// SUPPORT METHODS //
 	
-	private boolean autorizeRemoval (Block block, Player player){
+	public boolean autorizeRemoval (Block block, Player player){
 		boolean authorized = true;  // By default, let it be removed.
 		if (player != null && plugin.permit(player, "repairchest.destroy")){
 			authorized = true;
@@ -89,7 +100,7 @@ public class RepairChestBlockListener extends BlockListener {
 		}
 		return authorized;
 	}
-	private boolean relevantSign (Block block){
+	public boolean relevantSign (Block block){
 		boolean relevant = false; // Defaults to irrelevance.  Feels good, man!
 		if (block.getState() instanceof Sign){
 			if (((Sign)block.getState()).getLine(0).equalsIgnoreCase("[Repair]")){
