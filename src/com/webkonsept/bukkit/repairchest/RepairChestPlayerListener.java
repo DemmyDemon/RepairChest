@@ -21,16 +21,23 @@ public class RepairChestPlayerListener extends PlayerListener {
 	}
 	public void onPlayerCommandPreprocess (PlayerCommandPreprocessEvent event){
 		if (! plugin.isEnabled()) return;
-		if (event.getMessage().equalsIgnoreCase("/repairchesttest")){
+		if (event.getMessage().equalsIgnoreCase("/rctest")){
 			event.setCancelled(true);
 			if (plugin.permit(event.getPlayer(), "repairchest.testing")){
 				ItemStack inHand = event.getPlayer().getItemInHand();
-				if(inHand.getMaxStackSize() == 1 && inHand.getType().getMaxDurability() > 100){
-					inHand.setDurability((short)100);
+				if(inHand.getMaxStackSize() == 1 && inHand.getType().getMaxDurability() > 50){
+					inHand.setDurability((short) (inHand.getType().getMaxDurability() - 60));
 				}
 			}
 			else {
 				event.getPlayer().sendMessage(ChatColor.RED+"Sorry, you can't do that.");
+			}
+		}
+		else if (event.getMessage().equalsIgnoreCase("/rcreload")){
+			if (plugin.permit(event.getPlayer(), "repairchest.reload")){
+				event.setCancelled(true);
+				plugin.loadConfig();
+				event.getPlayer().sendMessage("RepairChest configuration reloaded!");
 			}
 		}
 	}

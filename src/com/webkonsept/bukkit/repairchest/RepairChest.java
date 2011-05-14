@@ -35,6 +35,7 @@ public class RepairChest extends JavaPlugin {
 	private boolean verbose = false;
 	public boolean partialRepair = false;
 	public boolean distributePartialRepair = true;
+	public String currencyString = "???";
 	
 	@Override
 	public void onDisable() {
@@ -42,27 +43,14 @@ public class RepairChest extends JavaPlugin {
 			if (!configDir.exists()){
 				configDir.mkdir();
 			}
+			config.save();
 		}
-		config.save();
 		this.out("Disabled");
 	}
 
 	@Override
 	public void onEnable() {
-		config.load();
-		verbose = config.getBoolean("verbose", false);
-		currency = config.getInt("currency",266);
-		baseCost = config.getDouble("baseCost",0.01);
-		currencyName = config.getString("currencyName","g");
-		partialRepair = config.getBoolean("partialRepair", false);
-		distributePartialRepair = config.getBoolean("distributePartialRepair", true);
-		String currencyString = Material.getMaterial(currency).toString();
-		if (!configFile.exists()){
-			if (!configDir.exists()){
-				configDir.mkdir();
-			}
-			config.save();
-		}
+		this.loadConfig();
 		this.out("Enabled!  currency: "+currencyString+"   baseCost: "+baseCost);
 		this.babble("VERBOSE MODE!  This will get spammy!");
 		if(!setupPermissions()){
@@ -70,6 +58,7 @@ public class RepairChest extends JavaPlugin {
 			fallbackPermissions.put("repairchest.use",true);
 			fallbackPermissions.put("repairchest.destroy",false);
 			fallbackPermissions.put("repairchest.testing", false);
+			fallbackPermissions.put("repairchest.reload",false);
 		}
 		PluginManager pm =getServer().getPluginManager();
 		pm.registerEvent(Event.Type.SIGN_CHANGE,blockListener,Priority.Normal,this);
@@ -133,6 +122,23 @@ public class RepairChest extends JavaPlugin {
 		}
 		else {
 			return "s";
+		}
+	}
+
+	public void loadConfig() {
+		config.load();
+		verbose = config.getBoolean("verbose", false);
+		currency = config.getInt("currency",266);
+		baseCost = config.getDouble("baseCost",0.01);
+		currencyName = config.getString("currencyName","g");
+		partialRepair = config.getBoolean("partialRepair", false);
+		distributePartialRepair = config.getBoolean("distributePartialRepair", true);
+		currencyString = Material.getMaterial(currency).toString();
+		if (!configFile.exists()){
+			if (!configDir.exists()){
+				configDir.mkdir();
+			}
+			config.save();
 		}
 	}
 
