@@ -1,3 +1,18 @@
 name: RepairChest
 main: com.webkonsept.bukkit.repairchest.RepairChest
 version: 0.5
+website: http://minecraft.webkonsept.com/
+author: Fredrik Vold
+database: false
+description: >
+        Provides a way to repair tools
+        Cost is done in physical items, by default Gold Ingots
+commands:
+    rctest:
+        aliases:
+        description: Damages your current tool for repair chest testing purposes
+        usage: /<command>  (takes no arguments)
+    rcreload:
+        aliases: 
+        description: Reloads the RepairChest settings file
+        usage: /<command> (takes no arguments)

@@ -4,10 +4,14 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.Event.Priority;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
@@ -40,6 +44,43 @@ public class RepairChest extends JavaPlugin {
 	public boolean distributePartialRepair = true;
 	public String currencyString = "???";
 	
+	public boolean onCommand(CommandSender sender, Command command, String commandLabel, String[] args) {
+		boolean success = true;
+		boolean player = false;
+		if (sender instanceof Player){
+			player = true;
+		}
+		if (! this.isEnabled()) return false;
+		if (command.getName().equalsIgnoreCase("rctest")){
+			if (this.permit((Player)sender, "repairchest.testing")){
+				ItemStack inHand = ((Player)sender).getItemInHand();
+				if(inHand.getMaxStackSize() == 1 && inHand.getType().getMaxDurability() > 10){
+					inHand.setDurability((short) (inHand.getType().getMaxDurability() - 5));
+					sender.sendMessage(ChatColor.GREEN+"Your tool has been nearly broken...");
+				}
+			}
+			else {
+				sender.sendMessage(ChatColor.RED+"Sorry, you can't do that.");
+			}
+		}
+		else if (command.getName().equalsIgnoreCase("rcreload")){
+			if (player && this.permit(((Player)sender),"repairchest.reload")){
+				this.loadConfig();
+				sender.sendMessage("RepairChest configuration reloaded!");
+			}
+			else if (player){
+				sender.sendMessage("Sorry, permission denied");
+			}
+			else {
+				this.loadConfig();
+			}
+		}
+		else {
+			success = false;
+		}
+		
+		return success;
+	}
 	@Override
 	public void onDisable() {
 		if (!configFile.exists()){
@@ -65,7 +106,6 @@ public class RepairChest extends JavaPlugin {
 		}
 		PluginManager pm =getServer().getPluginManager();
 		pm.registerEvent(Event.Type.SIGN_CHANGE,blockListener,Priority.Normal,this);
-		pm.registerEvent(Event.Type.PLAYER_COMMAND_PREPROCESS, playerListener, Priority.Normal, this);
 		pm.registerEvent(Event.Type.PLAYER_INTERACT,playerListener,Priority.Normal,this);
 		pm.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Priority.Normal, this);
 		pm.registerEvent(Event.Type.BLOCK_BURN, blockListener, Priority.Normal, this);

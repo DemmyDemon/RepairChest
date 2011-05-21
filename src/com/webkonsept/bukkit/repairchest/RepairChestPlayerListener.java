@@ -8,7 +8,6 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.inventory.ItemStack;
@@ -18,28 +17,6 @@ public class RepairChestPlayerListener extends PlayerListener {
 	
 	RepairChestPlayerListener (RepairChest instance) {
 		plugin = instance;
-	}
-	public void onPlayerCommandPreprocess (PlayerCommandPreprocessEvent event){
-		if (! plugin.isEnabled()) return;
-		if (event.getMessage().equalsIgnoreCase("/rctest")){
-			event.setCancelled(true);
-			if (plugin.permit(event.getPlayer(), "repairchest.testing")){
-				ItemStack inHand = event.getPlayer().getItemInHand();
-				if(inHand.getMaxStackSize() == 1 && inHand.getType().getMaxDurability() > 50){
-					inHand.setDurability((short) (inHand.getType().getMaxDurability() - 60));
-				}
-			}
-			else {
-				event.getPlayer().sendMessage(ChatColor.RED+"Sorry, you can't do that.");
-			}
-		}
-		else if (event.getMessage().equalsIgnoreCase("/rcreload")){
-			if (plugin.permit(event.getPlayer(), "repairchest.reload")){
-				event.setCancelled(true);
-				plugin.loadConfig();
-				event.getPlayer().sendMessage("RepairChest configuration reloaded!");
-			}
-		}
 	}
 	
 	public void onPlayerInteract (PlayerInteractEvent event){
@@ -84,9 +61,10 @@ public class RepairChestPlayerListener extends PlayerListener {
 												for (int i = 0; i < inventory.length; i++){
 													if (inventory[i] != null && inventory[i].getType().getMaxStackSize() == 1){
 														if (inventory[i].getDurability() > 0){
-															inventory[i].setDurability((short) (inventory[i].getDurability() - repairPerItem));
+															short newDurability = (short) (inventory[i].getDurability() - repairPerItem);
+															if (newDurability < 0) newDurability = 0;
+															inventory[i].setDurability(newDurability);
 															charge = true;
-												
 														}
 													}
 												}
