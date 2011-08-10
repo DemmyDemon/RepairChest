@@ -13,9 +13,9 @@ import org.bukkit.event.player.PlayerListener;
 import org.bukkit.inventory.ItemStack;
 
 public class RepairChestPlayerListener extends PlayerListener {
-	private RepairChest plugin;
+	private RepairChestPlugin plugin;
 	
-	RepairChestPlayerListener (RepairChest instance) {
+	RepairChestPlayerListener (RepairChestPlugin instance) {
 		plugin = instance;
 	}
 	

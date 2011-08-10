@@ -1,190 +1,99 @@
 package com.webkonsept.bukkit.repairchest;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.logging.Logger;
+import java.text.ParseException;
 
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
-import org.bukkit.event.Event.Priority;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginDescriptionFile;
-import org.bukkit.plugin.PluginManager;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.config.Configuration;
 
-import com.nijiko.permissions.PermissionHandler;
-import com.nijikokun.bukkit.Permissions.Permissions;
-
-public class RepairChest extends JavaPlugin {
+public class RepairChest {
 	
-	private Logger log = Logger.getLogger("Minecraft");
-	private PermissionHandler Permissions;
-	private boolean usePermissions;
+	private static final String sep = ",";  
+	private Location location;
+	private String ownerName;
+	private Integer repairsDone;
+	private Integer currencySaved;
+	private BlockFace signDirection;
 	
-	private RepairChestPlayerListener playerListener = new RepairChestPlayerListener(this);
-	public RepairChestBlockListener blockListener = new RepairChestBlockListener(this);
-	private RepairChestEntityListener entityListener = new RepairChestEntityListener(this);
+	private int expectedFieldsInChestString = 8;
 	
-	private HashMap<String,Boolean> fallbackPermissions = new HashMap<String,Boolean>();
-	private File configFile = new File("plugins/RepairChest/settings.yml");
-	private File configDir = new File("plugins/RepairChest/");
-	public Configuration config = new Configuration(configFile);
- 
-	public Integer currency = 266; // Gold Ingot
-	public String currencyName ="g";
-	public double baseCost = 0.01; // 100 damage = 1 this.currency
-	private boolean verbose = false;
-	public boolean partialRepair = false;
-	public boolean distributePartialRepair = true;
-	public String currencyString = "???";
-	
-	public boolean onCommand(CommandSender sender, Command command, String commandLabel, String[] args) {
-		boolean success = true;
-		boolean player = false;
-		if (sender instanceof Player){
-			player = true;
-		}
-		if (! this.isEnabled()) return false;
-		if (command.getName().equalsIgnoreCase("rctest")){
-			if (this.permit((Player)sender, "repairchest.testing")){
-				ItemStack inHand = ((Player)sender).getItemInHand();
-				if(inHand.getMaxStackSize() == 1 && inHand.getType().getMaxDurability() > 10){
-					inHand.setDurability((short) (inHand.getType().getMaxDurability() - 5));
-					sender.sendMessage(ChatColor.GREEN+"Your tool has been nearly broken...");
-				}
-			}
-			else {
-				sender.sendMessage(ChatColor.RED+"Sorry, you can't do that.");
-			}
-		}
-		else if (command.getName().equalsIgnoreCase("rcreload")){
-			if (player && this.permit(((Player)sender),"repairchest.reload")){
-				this.loadConfig();
-				sender.sendMessage("RepairChest configuration reloaded!");
-			}
-			else if (player){
-				sender.sendMessage("Sorry, permission denied");
-			}
-			else {
-				this.loadConfig();
-			}
-		}
-		else {
-			success = false;
+	RepairChest (String string) throws ParseException {
+		String[] elements = string.split(sep);
+		if (elements.length != expectedFieldsInChestString){
+			throw new ParseException ("Incorrect number of fields in RC string: "+string, 0);
 		}
 		
-		return success;
-	}
-	@Override
-	public void onDisable() {
-		if (!configFile.exists()){
-			if (!configDir.exists()){
-				configDir.mkdir();
-			}
-			config.save();
-		}
-		this.out("Disabled");
-	}
-
-	@Override
-	public void onEnable() {
-		this.loadConfig();
-		this.out("Enabled!  currency: "+currencyString+"   baseCost: "+baseCost);
-		this.babble("VERBOSE MODE!  This will get spammy!");
-		if(!setupPermissions()){
-			fallbackPermissions.put("repairchest.create",false);
-			fallbackPermissions.put("repairchest.use",true);
-			fallbackPermissions.put("repairchest.destroy",false);
-			fallbackPermissions.put("repairchest.testing", false);
-			fallbackPermissions.put("repairchest.reload",false);
-		}
-		PluginManager pm =getServer().getPluginManager();
-		pm.registerEvent(Event.Type.SIGN_CHANGE,blockListener,Priority.Normal,this);
-		pm.registerEvent(Event.Type.PLAYER_INTERACT,playerListener,Priority.Normal,this);
-		pm.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Priority.Normal, this);
-		pm.registerEvent(Event.Type.BLOCK_BURN, blockListener, Priority.Normal, this);
-		pm.registerEvent(Event.Type.ENTITY_EXPLODE,entityListener,Priority.Normal,this);
-	}
-	public boolean permit(Player player,String permission){ 
+		World world = Bukkit.getServer().getWorld(elements[0]);
+		if (world == null) throw new ParseException ("World "+elements[0]+" does not exist, from RC string: "+string,0);
 		
-		boolean allow = false; // Default to GTFO
-		if ( usePermissions ){
-			if (Permissions.has(player,permission)){
-				allow = true;
-			}
+		try {
+			double locX = Double.parseDouble(elements[1]);
+			double locY = Double.parseDouble(elements[2]);
+			double locZ = Double.parseDouble(elements[3]);
+			location = new Location(world,locX,locY,locZ);
+			ownerName = elements[4];
+			repairsDone = Integer.parseInt(elements[5]);
+			currencySaved = Integer.parseInt(elements[6]);
+			signDirection = BlockFace.valueOf(elements[7]);
 		}
-		else if (player.isOp()){
-			allow = true;
+		catch (NumberFormatException e){
+			throw new ParseException ("Malformed numbers in RC string: "+string,0);
 		}
-		else {
-			if (fallbackPermissions.get(permission) || false){
-				allow = true;
-			}
-		}
-		this.babble(player.getName()+" asked permission to "+permission+": "+allow);
-		return allow;
-	}
-	private boolean setupPermissions() {
-		Plugin test = this.getServer().getPluginManager().getPlugin("Permissions");
-		if (this.Permissions == null){
-			if (test != null){
-				this.Permissions = ((Permissions)test).getHandler();
-				this.usePermissions = true;
-				return true;
-			}
-			else {
-				this.out("Permissions plugin not found, defaulting to OPS CHECK mode");
-				return false;
-			}
-		}
-		else {
-			this.out("Urr, this is odd...  Permissions are already set up!");
-			return true;
+		if (signDirection == null){
+			throw new ParseException ("Invalid Sign Direction '"+elements[7]+"' in RC string!",0);
 		}
 	}
-	public void out(String message) {
-		PluginDescriptionFile pdfFile = this.getDescription();
-		log.info("[" + pdfFile.getName()+ " " + pdfFile.getVersion() + "] " + message);
+	RepairChest (Location place, String owner, Integer repairs,Integer currency,BlockFace sign){
+		location = place;
+		ownerName = owner;
+		repairsDone = repairs;
+		currencySaved = currency;
+		signDirection = sign;
+		
 	}
-	public void crap(String message){
-		PluginDescriptionFile pdfFile = this.getDescription();
-		log.severe("[" + pdfFile.getName()+ " " + pdfFile.getVersion() + " CRAP] " + message);
+	public String toString(){
+		
+		String worldName = location.getWorld().getName();
+		Integer x = (int) location.getX();
+		Integer y = (int) location.getY();
+		Integer z = (int) location.getX();
+		String sign = signDirection.toString();
+		
+		return worldName+sep+x+sep+y+sep+z+sep+ownerName+sep+repairsDone+sep+currencySaved+sep+sign;
 	}
-	public void babble(String message){
-		if (!this.verbose){ return; }
-		PluginDescriptionFile pdfFile = this.getDescription();
-		log.info("[" + pdfFile.getName()+ " " + pdfFile.getVersion() + " VERBOSE] " + message);
+	
+	public int addRepair(){
+		return ++repairsDone;
 	}
-	public String plural(int number) {
-		if (number == 1){
-			return "";
-		}
-		else {
-			return "s";
-		}
+	public int addRepair(int repairs){
+		repairsDone += repairs;
+		return repairsDone;
 	}
-
-	public void loadConfig() {
-		config.load();
-		verbose = config.getBoolean("verbose", false);
-		currency = config.getInt("currency",266);
-		baseCost = config.getDouble("baseCost",0.01);
-		currencyName = config.getString("currencyName","g");
-		partialRepair = config.getBoolean("partialRepair", false);
-		distributePartialRepair = config.getBoolean("distributePartialRepair", true);
-		currencyString = Material.getMaterial(currency).toString();
-		if (!configFile.exists()){
-			if (!configDir.exists()){
-				configDir.mkdir();
-			}
-			config.save();
-		}
+	public int getRepairs(){
+		return repairsDone;
 	}
-
+	public String getOwnerName(){
+		return ownerName;
+	}
+	public Player getOwnerPlayer(){
+		return Bukkit.getServer().getPlayer(ownerName);
+	}
+	public void setOwner(Player player){
+		if (player == null) return;
+		ownerName = player.getName();
+	}
+	public Location getLocation(){
+		return location;
+	}
+	public void setLocation(Location loc){
+		location = loc;
+	}
+	public BlockFace getSignDirection(){
+		return signDirection;
+	}
+	public void setSignDirection(BlockFace newDirection){
+		signDirection = newDirection;
+	}
 }

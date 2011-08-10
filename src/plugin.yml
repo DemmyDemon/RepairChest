@@ -1,5 +1,5 @@
 name: RepairChest
-main: com.webkonsept.bukkit.repairchest.RepairChest
+main: com.webkonsept.bukkit.repairchest.RepairChestPlugin
 version: 0.5
 website: http://minecraft.webkonsept.com/
 author: Fredrik Vold
@@ -10,9 +10,13 @@ description: >
 commands:
     rctest:
         aliases:
-        description: Damages your current tool for repair chest testing purposes
+        description: Damages your current tool for repair chest testing purposes.  DEPRECATED!
         usage: /<command>  (takes no arguments)
     rcreload:
         aliases: 
-        description: Reloads the RepairChest settings file
+        description: Reloads the RepairChest settings file.  DEPRECATED!
         usage: /<command> (takes no arguments)
+    repairchest:
+        aliases: rc
+        description: Replaces all previous /rc*something* commands
+        usage: /command [reload|test|harvest]

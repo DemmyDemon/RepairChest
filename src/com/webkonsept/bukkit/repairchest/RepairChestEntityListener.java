@@ -9,10 +9,10 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityListener;
 
 public class RepairChestEntityListener extends EntityListener {
-	private RepairChest plugin;
+	private RepairChestPlugin plugin;
 	
 
-	RepairChestEntityListener (RepairChest instance) {
+	RepairChestEntityListener (RepairChestPlugin instance) {
 		plugin = instance;
 	}
 	

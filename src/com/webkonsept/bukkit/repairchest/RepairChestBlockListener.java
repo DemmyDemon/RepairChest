@@ -14,10 +14,10 @@ import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.SignChangeEvent;
 
 public class RepairChestBlockListener extends BlockListener {
-	private RepairChest plugin;
+	private RepairChestPlugin plugin;
 	private ArrayList<BlockFace> checkFaces = this.getFacesToCheck();
 	
-	RepairChestBlockListener (RepairChest instance) {
+	RepairChestBlockListener (RepairChestPlugin instance) {
 		plugin = instance;
 	}
 	
@@ -32,17 +32,54 @@ public class RepairChestBlockListener extends BlockListener {
 		Player player = event.getPlayer();
 		if (tag.equalsIgnoreCase("[Repair]")){
 			if (event.getBlock().getType().equals(Material.WALL_SIGN)){
-				if (plugin.permit(player, "repairchest.create")){
-					player.sendMessage("Repair chest authorized!");
+				Block blockBelow = event.getBlock().getFace(BlockFace.DOWN);
+				if (blockBelow.getType().equals(Material.CHEST)){
+					if (plugin.permit(player, "repairchest.create")){
+						player.sendMessage("Repair chest authorized!");
+						
+					}
+					else {
+						
+						event.setLine(0, ""          );
+						event.setLine(1, "PERMISSION");
+						event.setLine(2, "DENIED"    );
+						event.setLine(3, ""          );
+						player.sendMessage("Sorry, you lack permission to create repair chests!");
+					}
 				}
 				else {
-					event.setLine(0, "DENIED!");
-					player.sendMessage("Sorry, you lack permission to create repair chests!");
+					event.setLine(0,"Chest first!");
+				}
+			}
+			else if (event.getBlock().getType().equals(Material.SIGN_POST)){
+				Block signBlock = event.getBlock();
+				byte data = signBlock.getData();
+				BlockFace chestSide = plugin.chestList.findChest(data);
+				Block chestBlock = null;
+				if (chestSide != null){
+					chestBlock = signBlock.getFace(chestSide);
+				}
+				
+				if (chestBlock != null && chestBlock.getType().equals(Material.CHEST)){
+					byte newSignData = plugin.chestList.signTranslate(data);
+					signBlock.setType(Material.WALL_SIGN);
+					signBlock.setData(newSignData);
+				}
+				else {
+					event.setLine(0,"Won't work!");
+					if (chestSide == null){
+						event.setLine(1,"Invalid sign");
+						event.setLine(2,"angle found!");
+					}
+					else {
+						event.setLine(1,"Chest first!");
+					}
 				}
 			}
 			else {
 				event.setLine(0, "Won't work!");
-				player.sendMessage("Repair chests only work with wall signs.");
+				event.setLine(1, "UNSUPPORTED");
+				event.setLine(2, "sign type!");
 			}
 		}
 	}
