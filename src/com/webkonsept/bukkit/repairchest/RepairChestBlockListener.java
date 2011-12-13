@@ -32,7 +32,7 @@ public class RepairChestBlockListener extends BlockListener {
 		Player player = event.getPlayer();
 		if (tag.equalsIgnoreCase("[Repair]")){
 			if (event.getBlock().getType().equals(Material.WALL_SIGN)){
-				Block blockBelow = event.getBlock().getFace(BlockFace.DOWN);
+				Block blockBelow = event.getBlock().getRelative(BlockFace.DOWN);
 				if (blockBelow.getType().equals(Material.CHEST)){
 					if (plugin.permit(player, "repairchest.create")){
 						player.sendMessage("Repair chest authorized!");
@@ -57,7 +57,7 @@ public class RepairChestBlockListener extends BlockListener {
 				BlockFace chestSide = plugin.chestList.findChest(data);
 				Block chestBlock = null;
 				if (chestSide != null){
-					chestBlock = signBlock.getFace(chestSide);
+					chestBlock = signBlock.getRelative(chestSide);
 				}
 				
 				if (chestBlock != null && chestBlock.getType().equals(Material.CHEST)){
@@ -125,7 +125,7 @@ public class RepairChestBlockListener extends BlockListener {
 			Iterator<BlockFace> faces = checkFaces.iterator();
 			while (faces.hasNext()){
 				BlockFace face = faces.next();
-				if (this.relevantSign(block.getFace(face))){
+				if (this.relevantSign(block.getRelative(face))){
 					authorized = false;
 					if (player != null){
 						player.sendMessage("This block has a protected sign on it, and can't be removed.");

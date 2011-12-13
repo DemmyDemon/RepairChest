@@ -31,7 +31,7 @@ public class RepairChestPlayerListener extends PlayerListener {
 					Sign sign = (Sign) block.getState();
 					if (sign.getLine(0).equalsIgnoreCase("[Repair]")){
 						if (plugin.permit(player, "repairchest.use")){
-							Block below = block.getFace(BlockFace.DOWN);
+							Block below = block.getRelative(BlockFace.DOWN);
 							if (below.getType().equals(Material.CHEST)){
 								Chest chest = (Chest) below.getState();
 								ItemStack[] inventory = chest.getInventory().getContents();
@@ -138,7 +138,7 @@ public class RepairChestPlayerListener extends PlayerListener {
 					Sign sign = (Sign) block.getState();
 					if (sign.getLine(0).equalsIgnoreCase("[Repair]")){
 						if (plugin.permit(player, "repairchest.use")){
-							Block below = block.getFace(BlockFace.DOWN);
+							Block below = block.getRelative(BlockFace.DOWN);
 							if (below.getType().equals(Material.CHEST)){
 								Chest chest = (Chest) below.getState();
 								ItemStack[] inventory = chest.getInventory().getContents();

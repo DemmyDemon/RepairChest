@@ -1,7 +1,6 @@
 package com.webkonsept.bukkit.repairchest;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.logging.Logger;
 
 import org.bukkit.ChatColor;
@@ -12,20 +11,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.config.Configuration;
 
-import com.nijiko.permissions.PermissionHandler;
-import com.nijikokun.bukkit.Permissions.Permissions;
-
+@SuppressWarnings("deprecation")
 public class RepairChestPlugin extends JavaPlugin {
 	
 	private Logger log = Logger.getLogger("Minecraft");
-	private PermissionHandler Permissions;
-	private boolean usePermissions;
 	
 	private RepairChestPlayerListener playerListener = new RepairChestPlayerListener(this);
 	protected RepairChestBlockListener blockListener = new RepairChestBlockListener(this);
@@ -34,7 +28,6 @@ public class RepairChestPlugin extends JavaPlugin {
 	
 
 	
-	private HashMap<String,Boolean> fallbackPermissions = new HashMap<String,Boolean>();
 	private File configFile; 
 	protected Configuration config;
  
@@ -48,33 +41,45 @@ public class RepairChestPlugin extends JavaPlugin {
 	
 	public boolean onCommand(CommandSender sender, Command command, String commandLabel, String[] args) {
 		boolean success = true;
-		boolean player = false;
-		if (sender instanceof Player){
-			player = true;
-		}
 		if (! this.isEnabled()) return false;
-		if (command.getName().equalsIgnoreCase("rctest")){
-			if (this.permit((Player)sender, "repairchest.testing")){
-				ItemStack inHand = ((Player)sender).getItemInHand();
-				if(inHand.getMaxStackSize() == 1 && inHand.getType().getMaxDurability() > 10){
-					inHand.setDurability((short) (inHand.getType().getMaxDurability() - 5));
-					sender.sendMessage(ChatColor.GREEN+"Your tool has been nearly broken...");
+		
+		Player player = null;
+		if (sender instanceof Player){
+			player = (Player)sender;
+		}
+		
+		
+		if (command.getName().equalsIgnoreCase("repairchest")){
+			if (args.length == 1){
+				if (player == null || permit(player,"repairchest.command."+args[0])){
+					if (args[0].equalsIgnoreCase("test")){
+						if (player == null){
+							sender.sendMessage("Sorry, but the console can't have an item in it's hand...");
+						}
+						else {
+							ItemStack inHand = player.getItemInHand();
+							if (inHand.getType().equals(Material.AIR)){
+								sender.sendMessage(ChatColor.RED+"You can't test with an empty hand, man.");
+							}
+							else if (inHand.getMaxStackSize() == 1 && inHand.getType().getMaxDurability() > 10){
+								inHand.setDurability((short) (inHand.getType().getMaxDurability() - 5));
+								sender.sendMessage(ChatColor.GREEN+"Your tool has been nearly broken...");
+							}
+							else {
+								sender.sendMessage(ChatColor.RED+"This item isn't suitable for this test.");
+							}
+						}
+					}
+					else if (args[0].equalsIgnoreCase("reload")){
+						this.loadConfig();
+					}
+				}
+				else {
+					sender.sendMessage(ChatColor.RED+"Permission to '"+args[0]+"' was denied.");
 				}
 			}
 			else {
-				sender.sendMessage(ChatColor.RED+"Sorry, you can't do that.");
-			}
-		}
-		else if (command.getName().equalsIgnoreCase("rcreload")){
-			if (player && this.permit(((Player)sender),"repairchest.reload")){
-				this.loadConfig();
-				sender.sendMessage("RepairChest configuration reloaded!");
-			}
-			else if (player){
-				sender.sendMessage("Sorry, permission denied");
-			}
-			else {
-				this.loadConfig();
+				sender.sendMessage(ChatColor.RED+"Invalid number of arguments.  /rc [test|reload]");
 			}
 		}
 		else {
@@ -101,13 +106,6 @@ public class RepairChestPlugin extends JavaPlugin {
 		this.loadConfig();
 		this.out("Enabled!  currency: "+currencyString+"   baseCost: "+baseCost);
 		this.babble("VERBOSE MODE!  This will get spammy!");
-		if(!setupPermissions()){
-			fallbackPermissions.put("repairchest.create",false);
-			fallbackPermissions.put("repairchest.use",true);
-			fallbackPermissions.put("repairchest.destroy",false);
-			fallbackPermissions.put("repairchest.testing", false);
-			fallbackPermissions.put("repairchest.reload",false);
-		}
 		PluginManager pm =getServer().getPluginManager();
 		pm.registerEvent(Event.Type.SIGN_CHANGE,blockListener,Priority.Normal,this);
 		pm.registerEvent(Event.Type.PLAYER_INTERACT,playerListener,Priority.Normal,this);
@@ -116,41 +114,7 @@ public class RepairChestPlugin extends JavaPlugin {
 		pm.registerEvent(Event.Type.ENTITY_EXPLODE,entityListener,Priority.Normal,this);
 	}
 	public boolean permit(Player player,String permission){ 
-		
-		boolean allow = false; // Default to GTFO
-		if ( usePermissions ){
-			if (Permissions.has(player,permission)){
-				allow = true;
-			}
-		}
-		else if (player.isOp()){
-			allow = true;
-		}
-		else {
-			if (fallbackPermissions.get(permission) || false){
-				allow = true;
-			}
-		}
-		this.babble(player.getName()+" asked permission to "+permission+": "+allow);
-		return allow;
-	}
-	private boolean setupPermissions() {
-		Plugin test = this.getServer().getPluginManager().getPlugin("Permissions");
-		if (this.Permissions == null){
-			if (test != null){
-				this.Permissions = ((Permissions)test).getHandler();
-				this.usePermissions = true;
-				return true;
-			}
-			else {
-				this.out("Permissions plugin not found, defaulting to OPS CHECK mode");
-				return false;
-			}
-		}
-		else {
-			this.out("Urr, this is odd...  Permissions are already set up!");
-			return true;
-		}
+		return player.hasPermission(permission);
 	}
 	public void out(String message) {
 		PluginDescriptionFile pdfFile = this.getDescription();
