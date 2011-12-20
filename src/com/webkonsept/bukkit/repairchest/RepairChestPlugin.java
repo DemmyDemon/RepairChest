@@ -32,6 +32,7 @@ public class RepairChestPlugin extends JavaPlugin {
 	protected Configuration config;
  
 	protected Integer currency = 266; // Gold Ingot
+	protected Material currencyMaterial = Material.GOLD_INGOT;
 	protected String currencyName ="g";
 	protected double baseCost = 0.01; // 100 damage = 1 this.currency
 	protected boolean verbose = false;
@@ -142,11 +143,27 @@ public class RepairChestPlugin extends JavaPlugin {
 		config.load();
 		verbose = config.getBoolean("verbose", false);
 		currency = config.getInt("currency",266);
+		currencyMaterial = Material.getMaterial(currency);
+		if (currencyMaterial == null){
+			crap("You have selected an invalid currency ("+currency+"), falling back to GOLD_INGOT!");
+			currency = 266;
+			currencyMaterial = Material.GOLD_INGOT;
+			currencyString = "Gold ingot";
+		}
+		else if (currencyMaterial.isEdible()){
+			crap("You've selected an edible currency.  Due to a bug, this won't work.  Falling back to GOLD_INGOT");
+			currency = 266;
+			currencyMaterial = Material.GOLD_INGOT;
+			currencyString = "gold ingot";
+		}
+		else {
+			currencyString = currencyMaterial.toString().replaceAll("_", " ").toLowerCase();
+		}
+		
 		baseCost = config.getDouble("baseCost",0.01);
 		currencyName = config.getString("currencyName","g");
 		partialRepair = config.getBoolean("partialRepair", false);
 		distributePartialRepair = config.getBoolean("distributePartialRepair", true);
-		currencyString = Material.getMaterial(currency).toString();
 		if (!configFile.exists()){
 			this.out("No config file!  Writing to "+configFile.getAbsolutePath());
 			if (!getDataFolder().exists()){

@@ -1,6 +1,6 @@
 name: RepairChest
 main: com.webkonsept.bukkit.repairchest.RepairChestPlugin
-version: 0.6
+version: 0.6.1
 website: http://minecraft.webkonsept.com/plugins/details/RepairChest.html
 thread: http://forums.bukkit.org/threads/RepairChest.15467/
 author: Fredrik Vold

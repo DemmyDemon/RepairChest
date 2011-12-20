@@ -64,6 +64,11 @@ public class RepairChestBlockListener extends BlockListener {
 					byte newSignData = plugin.chestList.signTranslate(data);
 					signBlock.setType(Material.WALL_SIGN);
 					signBlock.setData(newSignData);
+					Sign sign = (Sign)signBlock.getState();
+					sign.setLine(0,"[Repair]");
+					sign.setLine(1,event.getLine(1));
+					sign.setLine(2,event.getLine(2));
+					sign.setLine(3,event.getLine(3));
 				}
 				else {
 					event.setLine(0,"Won't work!");

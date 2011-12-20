@@ -31,9 +31,12 @@ public class RepairChestPlayerListener extends PlayerListener {
 					Sign sign = (Sign) block.getState();
 					if (sign.getLine(0).equalsIgnoreCase("[Repair]")){
 						if (plugin.permit(player, "repairchest.use")){
-							Block below = block.getRelative(BlockFace.DOWN);
-							if (below.getType().equals(Material.CHEST)){
-								Chest chest = (Chest) below.getState();
+							Block chestBlock = block.getRelative(BlockFace.DOWN);
+							if (!chestBlock.getType().equals(Material.CHEST)){
+								chestBlock = block.getRelative(plugin.chestList.findChest(block.getData()));
+							}
+							if (chestBlock.getType().equals(Material.CHEST)){
+								Chest chest = (Chest) chestBlock.getState();
 								ItemStack[] inventory = chest.getInventory().getContents();
 								if (calculateDamage(inventory) > 0){
 									ItemStack inHand = player.getItemInHand();
@@ -101,8 +104,14 @@ public class RepairChestPlayerListener extends PlayerListener {
 											plugin.babble("Charging for the repair...");
 											player.sendMessage(ChatColor.GREEN+"Ding!  Repair complete!");
 											if (afterRepair <= 0){
+												ItemStack nothing = new ItemStack(Material.AIR);
+												//nothing.setAmount(1);
 												plugin.babble("Poor bastard is now broke");
-												player.setItemInHand(null);
+												player.setItemInHand(nothing);
+												if (plugin.verbose){
+													ItemStack leftInHand = player.getItemInHand();
+													plugin.babble(leftInHand.toString());
+												}
 											}
 											else {
 												plugin.babble("rich-- = "+afterRepair);
@@ -115,7 +124,7 @@ public class RepairChestPlayerListener extends PlayerListener {
 										}
 									}
 									else {
-										player.sendMessage(ChatColor.DARK_RED+"Right-click the sign with a currency item ("+Material.getMaterial(plugin.currency).name()+") in your hand to pay.");
+										player.sendMessage(ChatColor.DARK_RED+"Right-click the sign with a currency item ("+plugin.currencyString+") in your hand to pay.");
 									}
 								}
 								else {
@@ -138,9 +147,12 @@ public class RepairChestPlayerListener extends PlayerListener {
 					Sign sign = (Sign) block.getState();
 					if (sign.getLine(0).equalsIgnoreCase("[Repair]")){
 						if (plugin.permit(player, "repairchest.use")){
-							Block below = block.getRelative(BlockFace.DOWN);
-							if (below.getType().equals(Material.CHEST)){
-								Chest chest = (Chest) below.getState();
+							Block chestBlock = block.getRelative(BlockFace.DOWN);
+							if (!chestBlock.getType().equals(Material.CHEST)){
+								chestBlock = block.getRelative(plugin.chestList.findChest(block.getData()));
+							}
+							if (chestBlock.getType().equals(Material.CHEST)){
+								Chest chest = (Chest) chestBlock.getState();
 								ItemStack[] inventory = chest.getInventory().getContents();
 								int cost = this.calculateCost(inventory);
 								int damage = this.calculateDamage(inventory);
