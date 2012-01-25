@@ -1,22 +1,21 @@
 package com.webkonsept.bukkit.repairchest;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
-import org.bukkit.event.Event.Priority;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.config.Configuration;
 
-@SuppressWarnings("deprecation")
 public class RepairChestPlugin extends JavaPlugin {
 	
 	private Logger log = Logger.getLogger("Minecraft");
@@ -26,11 +25,6 @@ public class RepairChestPlugin extends JavaPlugin {
 	private RepairChestEntityListener entityListener = new RepairChestEntityListener(this);
 	protected RepairChestList chestList = new RepairChestList(new File(getDataFolder(),"chests.txt"),this);
 	
-
-	
-	private File configFile; 
-	protected Configuration config;
- 
 	protected Integer currency = 266; // Gold Ingot
 	protected Material currencyMaterial = Material.GOLD_INGOT;
 	protected String currencyName ="g";
@@ -72,6 +66,7 @@ public class RepairChestPlugin extends JavaPlugin {
 						}
 					}
 					else if (args[0].equalsIgnoreCase("reload")){
+					    this.reloadConfig();
 						this.loadConfig();
 					}
 				}
@@ -91,28 +86,25 @@ public class RepairChestPlugin extends JavaPlugin {
 	}
 	@Override
 	public void onDisable() {
-		if (!configFile.exists()){
-			if (!getDataFolder().exists()){
-				getDataFolder().mkdir();
-			}
-			config.save();
-		}
 		this.out("Disabled");
 	}
 
 	@Override
 	public void onEnable() {
-		configFile = new File(getDataFolder(),"settings.yml");
-		config = new Configuration(configFile);
 		this.loadConfig();
 		this.out("Enabled!  currency: "+currencyString+"   baseCost: "+baseCost);
 		this.babble("VERBOSE MODE!  This will get spammy!");
 		PluginManager pm =getServer().getPluginManager();
+		pm.registerEvents(blockListener,this);
+		pm.registerEvents(playerListener,this);
+		pm.registerEvents(entityListener,this);
+		/* OLD!
 		pm.registerEvent(Event.Type.SIGN_CHANGE,blockListener,Priority.Normal,this);
 		pm.registerEvent(Event.Type.PLAYER_INTERACT,playerListener,Priority.Normal,this);
 		pm.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Priority.Normal, this);
 		pm.registerEvent(Event.Type.BLOCK_BURN, blockListener, Priority.Normal, this);
 		pm.registerEvent(Event.Type.ENTITY_EXPLODE,entityListener,Priority.Normal,this);
+		*/
 	}
 	public boolean permit(Player player,String permission){ 
 		return player.hasPermission(permission);
@@ -140,9 +132,27 @@ public class RepairChestPlugin extends JavaPlugin {
 	}
 
 	public void loadConfig() {
-		config.load();
-		verbose = config.getBoolean("verbose", false);
-		currency = config.getInt("currency",266);
+	    {
+	        File oldConfig = new File(getDataFolder(),"settings.yml");
+	        if (oldConfig.exists()){
+	            this.out("Old configuration file found.  Replacing with a new one, but attempting to keep your settings.");
+	            try {
+                    getConfig().load(oldConfig);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                    crap("The old configuration file disappeared?!  Whatever, moving on.");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    crap("Serious error trying to load the old configuration!  I'll make up a new one.");
+                } catch (InvalidConfigurationException e) {
+                    e.printStackTrace();
+                    crap("Old configuration was invalid.  Ignoring it.");
+                }
+                oldConfig.renameTo(new File(getDataFolder(),"old_settings.yml__you_can_delete_me"));
+	        }
+	    }
+		verbose = getConfig().getBoolean("verbose", false);
+		currency = getConfig().getInt("currency",266);
 		currencyMaterial = Material.getMaterial(currency);
 		if (currencyMaterial == null){
 			crap("You have selected an invalid currency ("+currency+"), falling back to GOLD_INGOT!");
@@ -160,17 +170,12 @@ public class RepairChestPlugin extends JavaPlugin {
 			currencyString = currencyMaterial.toString().replaceAll("_", " ").toLowerCase();
 		}
 		
-		baseCost = config.getDouble("baseCost",0.01);
-		currencyName = config.getString("currencyName","g");
-		partialRepair = config.getBoolean("partialRepair", false);
-		distributePartialRepair = config.getBoolean("distributePartialRepair", true);
-		if (!configFile.exists()){
-			this.out("No config file!  Writing to "+configFile.getAbsolutePath());
-			if (!getDataFolder().exists()){
-				getDataFolder().mkdir();
-			}
-			config.save();
-		}
+		baseCost = getConfig().getDouble("baseCost",0.01);
+		currencyName = getConfig().getString("currencyName","g");
+		partialRepair = getConfig().getBoolean("partialRepair", false);
+		distributePartialRepair = getConfig().getBoolean("distributePartialRepair", true);
+		
+		saveConfig();
 	}
 
 }

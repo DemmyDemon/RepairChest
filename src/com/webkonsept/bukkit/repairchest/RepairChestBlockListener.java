@@ -8,12 +8,13 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockBurnEvent;
-import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.SignChangeEvent;
 
-public class RepairChestBlockListener extends BlockListener {
+public class RepairChestBlockListener implements Listener {
 	private RepairChestPlugin plugin;
 	private ArrayList<BlockFace> checkFaces = this.getFacesToCheck();
 	
@@ -23,8 +24,8 @@ public class RepairChestBlockListener extends BlockListener {
 	
 	// EVENT HANDLERS //
 	
-	@Override
-	public void onSignChange (SignChangeEvent event){
+	@EventHandler
+	public void onSignChange (final SignChangeEvent event){
 		if (! plugin.isEnabled()){
 			return;
 		}
@@ -89,8 +90,8 @@ public class RepairChestBlockListener extends BlockListener {
 		}
 	}
 	
-	@Override
-	public void onBlockBreak (BlockBreakEvent event){
+	@EventHandler
+	public void onBlockBreak (final BlockBreakEvent event){
 		if (! plugin.isEnabled()){
 			return;  // If the plugin is disabled, it should not be doing anything.
 		}
@@ -100,8 +101,8 @@ public class RepairChestBlockListener extends BlockListener {
 		event.setCancelled( ! this.autorizeRemoval(event.getBlock(), event.getPlayer()));
 	}
 	
-	@Override
-	public void onBlockBurn (BlockBurnEvent event){
+	@EventHandler
+	public void onBlockBurn (final BlockBurnEvent event){
 		if (! plugin.isEnabled()) return;
 		if (event.isCancelled()) return;
 		event.setCancelled( ! this.autorizeRemoval(event.getBlock(),null)); // Null because this event no player.  Ever.

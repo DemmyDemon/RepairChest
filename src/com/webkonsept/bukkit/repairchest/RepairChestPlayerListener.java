@@ -1,25 +1,30 @@
 package com.webkonsept.bukkit.repairchest;
 
+import java.util.Map;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerListener;
 import org.bukkit.inventory.ItemStack;
 
-public class RepairChestPlayerListener extends PlayerListener {
+public class RepairChestPlayerListener implements Listener {
 	private RepairChestPlugin plugin;
 	
 	RepairChestPlayerListener (RepairChestPlugin instance) {
 		plugin = instance;
 	}
 	
-	public void onPlayerInteract (PlayerInteractEvent event){
+	@EventHandler
+	public void onPlayerInteract (final PlayerInteractEvent event){
 		if (! plugin.isEnabled()) return;
 		
 		Player player = event.getPlayer();
@@ -67,6 +72,15 @@ public class RepairChestPlayerListener extends PlayerListener {
 															short newDurability = (short) (inventory[i].getDurability() - repairPerItem);
 															if (newDurability < 0) newDurability = 0;
 															inventory[i].setDurability(newDurability);
+															
+															// Attempting to not fuck up Enchantments.
+															// I don't see how it's doing it, but perhaps setting them again will work?
+															// FIXME: follow up on this!
+															// FIXME: I can has less confusing object names plx?
+															Map<Enchantment,Integer> enchantments = inventory[i].getEnchantments();
+															for (Enchantment enchantment : enchantments.keySet()){
+															    inventory[i].addEnchantment(enchantment,enchantments.get(enchantment));
+															}
 															charge = true;
 														}
 													}

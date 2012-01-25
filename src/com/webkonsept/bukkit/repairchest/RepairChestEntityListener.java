@@ -5,10 +5,11 @@ import java.util.List;
 
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.entity.EntityListener;
 
-public class RepairChestEntityListener extends EntityListener {
+public class RepairChestEntityListener implements Listener {
 	private RepairChestPlugin plugin;
 	
 
@@ -16,8 +17,8 @@ public class RepairChestEntityListener extends EntityListener {
 		plugin = instance;
 	}
 	
-	@Override
-	public void onEntityExplode (EntityExplodeEvent event){
+	@EventHandler
+	public void onEntityExplode (final EntityExplodeEvent event){
 		if (!plugin.isEnabled()) return;
 		if (event.isCancelled()) return;
 		List<Block> blocks = event.blockList();
