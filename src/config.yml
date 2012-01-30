@@ -1,6 +1,4 @@
+signString: '[PartyHat]'
+signLine: 1
+useWhitelistPermissions: false
 verbose: false
-currency: 266
-baseCost: 0.01
-currencyName: g
-partialRepair: false
-distributePartialRepair: true
