@@ -155,7 +155,10 @@ public class RepairChestPlugin extends JavaPlugin {
 		partialRepair = getConfig().getBoolean("partialRepair", false);
 		distributePartialRepair = getConfig().getBoolean("distributePartialRepair", true);
 		
-		saveConfig();
+		File configFile = new File(this.getDataFolder(),"config.yml"); 
+		if (!configFile.exists()){
+		    saveConfig();
+	    }
 	}
 
 }
