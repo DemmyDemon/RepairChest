@@ -1,2 +1,3 @@
-RepairChest.jar
 /bin/
+.*
+*.jar
