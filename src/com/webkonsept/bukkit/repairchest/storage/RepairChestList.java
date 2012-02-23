@@ -1,4 +1,4 @@
-package com.webkonsept.bukkit.repairchest;
+package com.webkonsept.bukkit.repairchest.storage;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -16,6 +16,8 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 
+import com.webkonsept.bukkit.repairchest.RepairChestPlugin;
+
 public class RepairChestList {
 	protected RepairChestPlugin plugin;
 	protected HashMap<Location,RepairChest> chestLocation 	= new HashMap<Location,RepairChest>();
@@ -26,7 +28,7 @@ public class RepairChestList {
 	protected BlockFace[] chestSide = new BlockFace[13];
 	protected HashMap<BlockFace,BlockFace> signSide = new HashMap<BlockFace,BlockFace>();
 	
-	RepairChestList (File chestSource, RepairChestPlugin instance){
+	public RepairChestList (File chestSource, RepairChestPlugin instance){
 		plugin = instance;
 		source = chestSource;
 		

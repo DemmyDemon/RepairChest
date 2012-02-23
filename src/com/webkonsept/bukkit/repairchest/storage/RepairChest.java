@@ -1,4 +1,4 @@
-package com.webkonsept.bukkit.repairchest;
+package com.webkonsept.bukkit.repairchest.storage;
 
 import java.text.ParseException;
 

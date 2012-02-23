@@ -13,23 +13,28 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.webkonsept.bukkit.repairchest.listeners.RepairChestBlockListener;
+import com.webkonsept.bukkit.repairchest.listeners.RepairChestEntityListener;
+import com.webkonsept.bukkit.repairchest.listeners.RepairChestPlayerListener;
+import com.webkonsept.bukkit.repairchest.storage.RepairChestList;
+
 public class RepairChestPlugin extends JavaPlugin {
 	
 	private Logger log = Logger.getLogger("Minecraft");
 	
 	private RepairChestPlayerListener playerListener = new RepairChestPlayerListener(this);
-	protected RepairChestBlockListener blockListener = new RepairChestBlockListener(this);
+	public RepairChestBlockListener blockListener = new RepairChestBlockListener(this);
 	private RepairChestEntityListener entityListener = new RepairChestEntityListener(this);
-	protected RepairChestList chestList = new RepairChestList(new File(getDataFolder(),"chests.txt"),this);
+	public RepairChestList chestList = new RepairChestList(new File(getDataFolder(),"chests.txt"),this);
 	
-	protected Integer currency = 266; // Gold Ingot
+	public Integer currency = 266; // Gold Ingot
 	protected Material currencyMaterial = Material.GOLD_INGOT;
-	protected String currencyName ="g";
-	protected double baseCost = 0.01; // 100 damage = 1 this.currency
-	protected boolean verbose = false;
-	protected boolean partialRepair = false;
-	protected boolean distributePartialRepair = true;
-	protected String currencyString = "???";
+	public String currencyName ="g";
+	public double baseCost = 0.01; // 100 damage = 1 this.currency
+	public boolean verbose = false;
+	public boolean partialRepair = false;
+	public boolean distributePartialRepair = true;
+	public String currencyString = "???";
 	
 	public boolean onCommand(CommandSender sender, Command command, String commandLabel, String[] args) {
 		boolean success = true;

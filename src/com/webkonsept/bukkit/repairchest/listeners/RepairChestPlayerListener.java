@@ -1,4 +1,4 @@
-package com.webkonsept.bukkit.repairchest;
+package com.webkonsept.bukkit.repairchest.listeners;
 
 import java.util.Map;
 
@@ -16,10 +16,12 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
+import com.webkonsept.bukkit.repairchest.RepairChestPlugin;
+
 public class RepairChestPlayerListener implements Listener {
 	private RepairChestPlugin plugin;
 	
-	RepairChestPlayerListener (RepairChestPlugin instance) {
+	public RepairChestPlayerListener (RepairChestPlugin instance) {
 		plugin = instance;
 	}
 	

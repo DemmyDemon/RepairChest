@@ -1,4 +1,4 @@
-package com.webkonsept.bukkit.repairchest;
+package com.webkonsept.bukkit.repairchest.listeners;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -14,11 +14,13 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.SignChangeEvent;
 
+import com.webkonsept.bukkit.repairchest.RepairChestPlugin;
+
 public class RepairChestBlockListener implements Listener {
 	private RepairChestPlugin plugin;
 	private ArrayList<BlockFace> checkFaces = this.getFacesToCheck();
 	
-	RepairChestBlockListener (RepairChestPlugin instance) {
+	public RepairChestBlockListener (RepairChestPlugin instance) {
 		plugin = instance;
 	}
 	

@@ -1,4 +1,4 @@
-package com.webkonsept.bukkit.repairchest;
+package com.webkonsept.bukkit.repairchest.listeners;
 
 import java.util.Iterator;
 import java.util.List;
@@ -9,11 +9,13 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityExplodeEvent;
 
+import com.webkonsept.bukkit.repairchest.RepairChestPlugin;
+
 public class RepairChestEntityListener implements Listener {
 	private RepairChestPlugin plugin;
 	
 
-	RepairChestEntityListener (RepairChestPlugin instance) {
+	public RepairChestEntityListener (RepairChestPlugin instance) {
 		plugin = instance;
 	}
 	
