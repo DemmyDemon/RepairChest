@@ -1,4 +1,34 @@
-signString: '[PartyHat]'
-signLine: 1
-useWhitelistPermissions: false
 verbose: false
+currency: 266
+baseCost: 0.01
+currencyName: g
+currencyString: Gold ingot
+partialRepair: false
+distributePartialRepair: false
+triggerString: "[Repair]"
+strings:
+    spammy: VERBOSE MODE ON!  This will get spammy!
+    testNoConsole: Sorry, but the console can't have an item in it's hand...
+    testNoEmptyHand: You can't test with an empty hand, man.
+    testNearlyBroken: Your tool has been nearly broken...
+    testNotSuitable: This item isn't suitable for this test.
+    reloadedSuccessfully:  RepairChest settings reloaded successfully!
+    permissionDenied: Permission denied.
+    invalidArgument: Invalid argument!
+    cantAfford: You can't afford this repair!
+    ding: Ding!  Repair complete!
+    usage: Right-click the sign with a currency item in your hand to pay.
+    currencyIs: "The currency is:"
+    nothing: Nothing to repair!
+    noChest: Uh, there is no chest.
+    usagePermissionDenied: Sorry, you don't have permission to use repair chests.
+    removePermissionDenied: Permission denied!  You can't remove repair chest signs.
+    cantRemoveProtected: This block has a protected sign on it, and can't be removed.
+    explosionBroadcast: Everyone, please refrain from blowing up repair chests.  It's not nice.
+    damagePoint: point
+    plural: s
+    ofDamageCosts: of damage costs
+    toRepair: to repair.
+    chestAuthorized: Repair chest authorized!
+    chestDenied: Sorry, you lack permission to create repair chests!
+    chestFirst: Chest first!

@@ -5,11 +5,12 @@
 ]>
 <project name="RepairChest" default="testing">
 	<path id="class.path">
-		<fileset dir="./libs/" includes="*.jar" />
+		<fileset dir="../libs/" includes="*.jar" />
   	</path>
-  	<target name="compile">
+  	<target name="compile" depends="clean">
   		<mkdir dir="./bin"/>
     	<javac
+            debug="true" debuglevel="lines,vars,source"
     		srcdir="./src"
     		classpathref="class.path"
     		destdir="./bin"
@@ -34,23 +35,22 @@
     		dir="bin/" 
     	/>
   	</target>
-	<target name="deploy" depends="clean,jar">
+	<target name="deploy" depends="jar">
 		<copy 
 			file="${ant.project.name}.jar"
 			tofile="W:/server/plugins/${ant.project.name}.jar"
 		/>
 	</target>
-	<target name="testing" depends="clean,jar">
+	<target name="testing" depends="jar">
 		<copy
 			file="${ant.project.name}.jar"
 			tofile="C:/Users/Fredrik/Desktop/Minecraft/Server/plugins/${ant.project.name}.jar"
 		/>
 	</target>
-	   <target name="publish" depends="clean,jar">
+	   <target name="publish" depends="jar">
 	        <copy
 	          file="${ant.project.name}.jar"
 	          tofile="W:/publish/${ant.project.name}.jar"
 	        />
 	    </target>
-  	<target name="buildJar" depends="clean,jar" />
 </project>

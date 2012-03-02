@@ -38,7 +38,7 @@ public class RepairChestBlockListener implements Listener {
 				Block blockBelow = event.getBlock().getRelative(BlockFace.DOWN);
 				if (blockBelow.getType().equals(Material.CHEST)){
 					if (plugin.permit(player, "repairchest.create")){
-						player.sendMessage("Repair chest authorized!");
+						player.sendMessage(plugin.cfg().tr("chestAuthorized"));
 						
 					}
 					else {
@@ -47,11 +47,11 @@ public class RepairChestBlockListener implements Listener {
 						event.setLine(1, "PERMISSION");
 						event.setLine(2, "DENIED"    );
 						event.setLine(3, ""          );
-						player.sendMessage("Sorry, you lack permission to create repair chests!");
+						player.sendMessage(plugin.cfg().tr("chestDenied"));
 					}
 				}
 				else {
-					event.setLine(0,"Chest first!");
+					event.setLine(0,plugin.cfg().tr("chestFirst"));
 				}
 			}
 			else if (event.getBlock().getType().equals(Material.SIGN_POST)){
@@ -124,7 +124,7 @@ public class RepairChestBlockListener implements Listener {
 		else if (block.getType().equals(Material.WALL_SIGN)){
 			if (this.relevantSign(block)){
 				if (player != null){
-					player.sendMessage("Permission denied!  You can't remove repair chest signs.");
+					player.sendMessage(plugin.cfg().tr("removePermissionDenied"));
 				}
 				authorized = false;
 			}
@@ -136,7 +136,7 @@ public class RepairChestBlockListener implements Listener {
 				if (this.relevantSign(block.getRelative(face))){
 					authorized = false;
 					if (player != null){
-						player.sendMessage("This block has a protected sign on it, and can't be removed.");
+						player.sendMessage(plugin.cfg().tr("cantRemoveProtected"));
 					}
 					break;
 				}
@@ -147,7 +147,7 @@ public class RepairChestBlockListener implements Listener {
 	public boolean relevantSign (Block block){
 		boolean relevant = false; // Defaults to irrelevance.  Feels good, man!
 		if (block.getState() instanceof Sign){
-			if (((Sign)block.getState()).getLine(0).equalsIgnoreCase("[Repair]")){
+			if (((Sign)block.getState()).getLine(0).equalsIgnoreCase(plugin.triggerString)){
 				relevant = true;
 			}
 		}

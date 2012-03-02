@@ -28,13 +28,20 @@ public class RepairChestPlugin extends JavaPlugin {
 	public RepairChestList chestList = new RepairChestList(new File(getDataFolder(),"chests.txt"),this);
 	
 	public Integer currency = 266; // Gold Ingot
-	protected Material currencyMaterial = Material.GOLD_INGOT;
+	public Material currencyMaterial = Material.GOLD_INGOT;
 	public String currencyName ="g";
 	public double baseCost = 0.01; // 100 damage = 1 this.currency
 	public boolean verbose = false;
 	public boolean partialRepair = false;
 	public boolean distributePartialRepair = true;
 	public String currencyString = "???";
+	public String triggerString = "[Repair]";
+	
+	private KonseptConfig cfg;
+	
+	public KonseptConfig cfg(){
+	    return cfg;
+	}
 	
 	public boolean onCommand(CommandSender sender, Command command, String commandLabel, String[] args) {
 		boolean success = true;
@@ -51,33 +58,33 @@ public class RepairChestPlugin extends JavaPlugin {
 				if (player == null || permit(player,"repairchest.command."+args[0])){
 					if (args[0].equalsIgnoreCase("test")){
 						if (player == null){
-							sender.sendMessage("Sorry, but the console can't have an item in it's hand...");
+							sender.sendMessage(cfg.tr("testNoConsole"));
 						}
 						else {
 							ItemStack inHand = player.getItemInHand();
 							if (inHand.getType().equals(Material.AIR)){
-								sender.sendMessage(ChatColor.RED+"You can't test with an empty hand, man.");
+								sender.sendMessage(ChatColor.RED+cfg.tr("testNoEmptyHand"));
 							}
 							else if (inHand.getMaxStackSize() == 1 && inHand.getType().getMaxDurability() > 10){
 								inHand.setDurability((short) (inHand.getType().getMaxDurability() - 5));
-								sender.sendMessage(ChatColor.GREEN+"Your tool has been nearly broken...");
+								sender.sendMessage(ChatColor.GREEN+cfg.tr("testNearlyBroken"));
 							}
 							else {
-								sender.sendMessage(ChatColor.RED+"This item isn't suitable for this test.");
+								sender.sendMessage(ChatColor.RED+cfg.tr("testNotSuitable"));
 							}
 						}
 					}
 					else if (args[0].equalsIgnoreCase("reload")){
-					    this.reloadConfig();
-						this.loadConfig();
+						loadConfig();
+						sender.sendMessage(ChatColor.GREEN+cfg.tr("reloadedSuccessfully"));
 					}
 				}
 				else {
-					sender.sendMessage(ChatColor.RED+"Permission to '"+args[0]+"' was denied.");
+					sender.sendMessage(ChatColor.RED+cfg.tr("permissionDenied"));
 				}
 			}
 			else {
-				sender.sendMessage(ChatColor.RED+"Invalid number of arguments.  /rc [test|reload]");
+				sender.sendMessage(ChatColor.RED+cfg.tr("invalidArgument")+" /rc [test|reload]");
 			}
 		}
 		else {
@@ -90,23 +97,16 @@ public class RepairChestPlugin extends JavaPlugin {
 	public void onDisable() {
 		this.out("Disabled");
 	}
-
 	@Override
 	public void onEnable() {
-		this.loadConfig();
-		this.out("Enabled!  currency: "+currencyString+"   baseCost: "+baseCost);
-		this.babble("VERBOSE MODE!  This will get spammy!");
+	    cfg = new KonseptConfig(this);
+		loadConfig();
+		out("Enabled!  currency: "+currencyString+"   baseCost: "+baseCost);
+		babble(cfg.tr("spammy"));
 		PluginManager pm =getServer().getPluginManager();
 		pm.registerEvents(blockListener,this);
 		pm.registerEvents(playerListener,this);
 		pm.registerEvents(entityListener,this);
-		/* OLD!
-		pm.registerEvent(Event.Type.SIGN_CHANGE,blockListener,Priority.Normal,this);
-		pm.registerEvent(Event.Type.PLAYER_INTERACT,playerListener,Priority.Normal,this);
-		pm.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Priority.Normal, this);
-		pm.registerEvent(Event.Type.BLOCK_BURN, blockListener, Priority.Normal, this);
-		pm.registerEvent(Event.Type.ENTITY_EXPLODE,entityListener,Priority.Normal,this);
-		*/
 	}
 	public boolean permit(Player player,String permission){ 
 		return player.hasPermission(permission);
@@ -129,15 +129,16 @@ public class RepairChestPlugin extends JavaPlugin {
 			return "";
 		}
 		else {
-			return "s";
+			return cfg.tr("plural");
 		}
 	}
 
 	public void loadConfig() {
-	    getConfig().options().copyDefaults(true);
-
-		verbose = getConfig().getBoolean("verbose", false);
-		currency = getConfig().getInt("currency",266);
+	    int stringNumber = cfg.refresh();
+	    out("Translating "+stringNumber+" strings");
+	    triggerString = cfg.get().getString("triggerString","[Repair]");
+		verbose = cfg.get().getBoolean("verbose", false);
+		currency = cfg.get().getInt("currency",266);
 		currencyMaterial = Material.getMaterial(currency);
 		if (currencyMaterial == null){
 			crap("You have selected an invalid currency ("+currency+"), falling back to GOLD_INGOT!");
@@ -149,21 +150,16 @@ public class RepairChestPlugin extends JavaPlugin {
 			crap("You've selected an edible currency.  Due to a bug, this won't work.  Falling back to GOLD_INGOT");
 			currency = 266;
 			currencyMaterial = Material.GOLD_INGOT;
-			currencyString = "gold ingot";
+			currencyString = "Gold ingot";
 		}
 		else {
-			currencyString = currencyMaterial.toString().replaceAll("_", " ").toLowerCase();
+			currencyString = cfg.get().getString("currencyString");
 		}
 		
-		baseCost = getConfig().getDouble("baseCost",0.01);
-		currencyName = getConfig().getString("currencyName","g");
-		partialRepair = getConfig().getBoolean("partialRepair", false);
-		distributePartialRepair = getConfig().getBoolean("distributePartialRepair", true);
-		
-		File configFile = new File(this.getDataFolder(),"config.yml"); 
-		if (!configFile.exists()){
-		    saveConfig();
-	    }
+		baseCost = cfg.get().getDouble("baseCost",0.01);
+		currencyName = cfg.get().getString("currencyName","g");
+		partialRepair = cfg.get().getBoolean("partialRepair", false);
+		distributePartialRepair = cfg.get().getBoolean("distributePartialRepair", true);
 	}
 
 }

@@ -36,7 +36,7 @@ public class RepairChestPlayerListener implements Listener {
 			if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK)){
 				if (blockType.equals(Material.WALL_SIGN)){
 					Sign sign = (Sign) block.getState();
-					if (sign.getLine(0).equalsIgnoreCase("[Repair]")){
+					if (sign.getLine(0).equalsIgnoreCase(plugin.triggerString)){
 						if (plugin.permit(player, "repairchest.use")){
 							Block chestBlock = block.getRelative(BlockFace.DOWN);
 							if (!chestBlock.getType().equals(Material.CHEST)){
@@ -48,7 +48,7 @@ public class RepairChestPlayerListener implements Listener {
 								if (calculateDamage(inventory) > 0){
 									ItemStack inHand = player.getItemInHand();
 									Material inHandType = inHand.getType();
-									if (inHandType.equals(Material.getMaterial(plugin.currency))){
+									if (inHandType.equals(plugin.currencyMaterial)){
 										int cost = calculateCost(inventory);
 										if (cost < 1){
 											cost = 1;
@@ -59,7 +59,7 @@ public class RepairChestPlayerListener implements Listener {
 										int repairCredits = (int)(currencyPile / plugin.baseCost);
 										
 										if (afterRepair < 0 && ! plugin.partialRepair){
-											player.sendMessage(ChatColor.DARK_RED+"You can't afford this repair!");
+											player.sendMessage(ChatColor.DARK_RED+plugin.cfg().tr("cantAfford"));
 											return;
 										}
 										else if (afterRepair < 0 && plugin.partialRepair){
@@ -118,7 +118,7 @@ public class RepairChestPlayerListener implements Listener {
 										}
 										if (charge){
 											plugin.babble("Charging for the repair...");
-											player.sendMessage(ChatColor.GREEN+"Ding!  Repair complete!");
+											player.sendMessage(ChatColor.GREEN+plugin.cfg().tr("ding"));
 											if (afterRepair <= 0){
 												ItemStack nothing = new ItemStack(Material.AIR);
 												//nothing.setAmount(1);
@@ -140,19 +140,20 @@ public class RepairChestPlayerListener implements Listener {
 										}
 									}
 									else {
-										player.sendMessage(ChatColor.DARK_RED+"Right-click the sign with a currency item ("+plugin.currencyString+") in your hand to pay.");
+										player.sendMessage(ChatColor.DARK_RED+plugin.cfg().tr("usage"));
+										player.sendMessage(ChatColor.DARK_RED+plugin.cfg().tr("currencyIs")+" "+plugin.currencyString);
 									}
 								}
 								else {
-									player.sendMessage(ChatColor.DARK_RED+"Nothing to repair!");
+									player.sendMessage(ChatColor.DARK_RED+plugin.cfg().tr("nothing"));
 								}
 							}
 							else {
-								player.sendMessage(ChatColor.DARK_RED+"Uh, there is no chest.");
+								player.sendMessage(ChatColor.DARK_RED+plugin.cfg().tr("noChest"));
 							}
 						}
 						else {
-							player.sendMessage(ChatColor.DARK_RED+"Sorry, you don't have permission to use repair chests.");
+							player.sendMessage(ChatColor.DARK_RED+plugin.cfg().tr("usagePermissionDenied"));
 						}
 					}
 				}
@@ -172,11 +173,11 @@ public class RepairChestPlayerListener implements Listener {
 								ItemStack[] inventory = chest.getInventory().getContents();
 								int cost = this.calculateCost(inventory);
 								int damage = this.calculateDamage(inventory);
-								player.sendMessage(damage+" point"+plugin.plural(damage)+" of damage costs "+cost+plugin.currencyName+" to repair.");
+								player.sendMessage(damage+" "+plugin.cfg().tr("damagePoint")+plugin.plural(damage)+" "+plugin.cfg().tr("ofDamageCosts")+" "+cost+plugin.currencyName+" "+plugin.cfg().tr("toRepair"));
 							}
 						}
 						else {
-							player.sendMessage(ChatColor.DARK_RED+"Sorry, you don't have permission to use repair chests.");
+							player.sendMessage(ChatColor.DARK_RED+plugin.cfg().tr("usagePermissionDenied"));
 						}
 					}
 				}

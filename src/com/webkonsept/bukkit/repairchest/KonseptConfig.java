@@ -1,23 +1,22 @@
-package com.webkonsept;
+package com.webkonsept.bukkit.repairchest;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 
 public class KonseptConfig {
-    private final String version = "v0.1";
+    private final String version = "v0.1.2";
     private Plugin plugin;
     private HashMap<String,String> strings = new HashMap<String,String>();
     private Logger log = Logger.getLogger("Minecraft");
     private boolean verbose = false;
     private File cfgFile;
-    private YamlConfiguration config;
+    private FileConfiguration config;
     
     public KonseptConfig(Plugin plugin){
         this.plugin = plugin;
@@ -25,35 +24,44 @@ public class KonseptConfig {
         
     }
     
-    public void refresh(){
+    public int refresh(){
+        int stringNumber = 0;
+        plugin.reloadConfig();
         cfgFile = new File(plugin.getDataFolder(),"config.yml");
-        config = YamlConfiguration.loadConfiguration(cfgFile);
+        config = plugin.getConfig();
+        
         if (!cfgFile.exists()){
             config.options().copyDefaults(true);
-            try {
-                config.save(cfgFile);
-            } catch (IOException e) {
-                log.severe("Failed to save configuration to "+cfgFile+": "+e.getMessage());
-            }
+            plugin.saveConfig();
         }
         verbose = plugin.getConfig().getBoolean("verbose",false);
         verbose("Loading Configuration using KonseptConfig "+version);
-        
-        Map<String,Object> cfgStrings = config.getConfigurationSection("strings").getValues(false);
-        if (cfgStrings != null){
-            verbose(cfgStrings.size()+" strings found");
-            for (String item : cfgStrings.keySet()){
-                Object rawValue = cfgStrings.get(item);
-                if (rawValue instanceof String){
-                    String itemValue = (String)rawValue;
-                    verbose(item+"="+itemValue);
-                    strings.put(item,itemValue);
-                }
-                else {
-                    verbose("strings in configuration contained a "+rawValue.getClass().toString());
+        ConfigurationSection stringSection = config.getConfigurationSection("strings");
+        if (stringSection != null){
+            Map<String,Object> cfgStrings = stringSection.getValues(false);
+            if (cfgStrings != null){
+                verbose(cfgStrings.size()+" strings found");
+                for (String item : cfgStrings.keySet()){
+                    Object rawValue = cfgStrings.get(item);
+                    if (rawValue instanceof String){
+                        String itemValue = (String)rawValue;
+                        verbose(item+"="+itemValue);
+                        strings.put(item,itemValue);
+                        stringNumber++;
+                    }
+                    else {
+                        verbose("strings in configuration contained a "+rawValue.getClass().toString());
+                    }
                 }
             }
+            else {
+                verbose("String section holds no values!");
+            }
         }
+        else {
+            verbose("No strings section found!");
+        }
+        return stringNumber;
     }
     public String tr(String name){ // TRanslate, yeah?
         if (strings.containsKey(name)){
