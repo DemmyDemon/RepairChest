@@ -33,7 +33,7 @@ public class RepairChestBlockListener implements Listener {
 		}
 		String tag = event.getLine(0);
 		Player player = event.getPlayer();
-		if (tag.equalsIgnoreCase("[Repair]")){
+		if (tag.equalsIgnoreCase(plugin.triggerString)){
 			if (event.getBlock().getType().equals(Material.WALL_SIGN)){
 				Block blockBelow = event.getBlock().getRelative(BlockFace.DOWN);
 				if (blockBelow.getType().equals(Material.CHEST)){
@@ -68,10 +68,11 @@ public class RepairChestBlockListener implements Listener {
 					signBlock.setType(Material.WALL_SIGN);
 					signBlock.setData(newSignData);
 					Sign sign = (Sign)signBlock.getState();
-					sign.setLine(0,"[Repair]");
+					sign.setLine(0,event.getLine(0));
 					sign.setLine(1,event.getLine(1));
 					sign.setLine(2,event.getLine(2));
 					sign.setLine(3,event.getLine(3));
+                    sign.update(true);
 				}
 				else {
 					event.setLine(0,"Won't work!");

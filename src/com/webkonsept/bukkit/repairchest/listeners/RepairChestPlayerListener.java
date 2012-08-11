@@ -1,14 +1,11 @@
 package com.webkonsept.bukkit.repairchest.listeners;
 
-import java.util.Map;
-
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -37,7 +34,7 @@ public class RepairChestPlayerListener implements Listener {
 				if (blockType.equals(Material.WALL_SIGN)){
 					Sign sign = (Sign) block.getState();
 					if (sign.getLine(0).equalsIgnoreCase(plugin.triggerString)){
-						if (plugin.permit(player, "repairchest.use")){
+						if (!plugin.checkRepairPermission || plugin.permit(player, "repairchest.use")){
 							Block chestBlock = block.getRelative(BlockFace.DOWN);
 							if (!chestBlock.getType().equals(Material.CHEST)){
 								chestBlock = block.getRelative(plugin.chestList.findChest(block.getData()));
@@ -67,22 +64,21 @@ public class RepairChestPlayerListener implements Listener {
 											if (plugin.distributePartialRepair){
 												int itemsInChest = numberOfRepairableItems(inventory);
 												int repairPerItem = repairCredits / itemsInChest;
-												plugin.babble("Repair per item is "+repairPerItem+" for "+itemsInChest+" items, "+repairCredits+" credits.");
+												plugin.verbose("Repair per item is " + repairPerItem + " for " + itemsInChest + " items, " + repairCredits + " credits.");
 												for (int i = 0; i < inventory.length; i++){
-													if (inventory[i] != null && inventory[i].getType().getMaxStackSize() == 1){
+													if (inventory[i] != null && plugin.canRepair(inventory[i])){
 														if (inventory[i].getDurability() > 0){
 															short newDurability = (short) (inventory[i].getDurability() - repairPerItem);
 															if (newDurability < 0) newDurability = 0;
 															inventory[i].setDurability(newDurability);
+															/* Turns out it wasn't my plugin causing grief at all.
 															
-															// Attempting to not fuck up Enchantments.
-															// I don't see how it's doing it, but perhaps setting them again will work?
-															// FIXME: follow up on this!
-															// FIXME: I can has less confusing object names plx?
+															// No need to do this any more.
 															Map<Enchantment,Integer> enchantments = inventory[i].getEnchantments();
 															for (Enchantment enchantment : enchantments.keySet()){
 															    inventory[i].addEnchantment(enchantment,enchantments.get(enchantment));
 															}
+															*/
 															charge = true;
 														}
 													}
@@ -90,7 +86,7 @@ public class RepairChestPlayerListener implements Listener {
 											}
 											else {
 												for (int i = 0; i < inventory.length;i++){
-													if (inventory[i] != null && inventory[i].getType().getMaxStackSize() == 1){
+													if (inventory[i] != null && plugin.canRepair(inventory[i])){
 														int damage = inventory[i].getDurability();
 														if (damage <= repairCredits){
 															repairCredits -= damage;
@@ -108,7 +104,7 @@ public class RepairChestPlayerListener implements Listener {
 										}
 										else { // That is, partial repair is OFF, and the player can afford a full one
 											for (int i = 0; i < inventory.length; i++){
-												if (inventory[i] != null && inventory[i].getType().getMaxStackSize() == 1){
+												if (inventory[i] != null && plugin.canRepair(inventory[i])){
 													if (inventory[i].getDurability() > 0){
 														inventory[i].setDurability((short)0);
 														charge = true;
@@ -117,25 +113,25 @@ public class RepairChestPlayerListener implements Listener {
 											}
 										}
 										if (charge){
-											plugin.babble("Charging for the repair...");
+											plugin.verbose("Charging for the repair...");
 											player.sendMessage(ChatColor.GREEN+plugin.cfg().tr("ding"));
 											if (afterRepair <= 0){
 												ItemStack nothing = new ItemStack(Material.AIR);
 												//nothing.setAmount(1);
-												plugin.babble("Poor bastard is now broke");
+												plugin.verbose("Poor bastard is now broke");
 												player.setItemInHand(nothing);
 												if (plugin.verbose){
 													ItemStack leftInHand = player.getItemInHand();
-													plugin.babble(leftInHand.toString());
+													plugin.verbose(leftInHand.toString());
 												}
 											}
 											else {
-												plugin.babble("rich-- = "+afterRepair);
+												plugin.verbose("rich-- = " + afterRepair);
 												player.setItemInHand(new ItemStack(plugin.currency,afterRepair));
 											}
 										}
 										else {
-											plugin.babble("Didn't fix anything.");
+											plugin.verbose("Didn't fix anything.");
 											player.setItemInHand(new ItemStack(plugin.currency,currencyPile));
 										}
 									}
@@ -162,8 +158,8 @@ public class RepairChestPlayerListener implements Listener {
 			else if (event.getAction().equals(Action.LEFT_CLICK_BLOCK)){
 				if (blockType.equals(Material.WALL_SIGN)){
 					Sign sign = (Sign) block.getState();
-					if (sign.getLine(0).equalsIgnoreCase("[Repair]")){
-						if (plugin.permit(player, "repairchest.use")){
+					if (sign.getLine(0).equalsIgnoreCase(plugin.triggerString)){
+						if (!plugin.checkRepairPermission || plugin.permit(player, "repairchest.use")){
 							Block chestBlock = block.getRelative(BlockFace.DOWN);
 							if (!chestBlock.getType().equals(Material.CHEST)){
 								chestBlock = block.getRelative(plugin.chestList.findChest(block.getData()));
@@ -187,7 +183,7 @@ public class RepairChestPlayerListener implements Listener {
 	private int numberOfRepairableItems(ItemStack[] inventory) {
 		int repairable = 0;
 		for (int i = 0; i < inventory.length; i++){
-			if (inventory[i] != null && inventory[i].getType().getMaxStackSize() == 1){
+			if (inventory[i] != null && plugin.canRepair(inventory[i])){
 				if (inventory[i].getDurability() > 0){
 					repairable++;
 				}
@@ -199,7 +195,7 @@ public class RepairChestPlayerListener implements Listener {
 	private int calculateDamage(ItemStack[] inventory){
 		int damage = 0;
 		for (int i = 0; i < inventory.length; i++){
-			if (inventory[i] != null && inventory[i].getType().getMaxStackSize() == 1){
+			if (inventory[i] != null && plugin.canRepair(inventory[i])){
 				damage += inventory[i].getDurability();
 			}
 		}

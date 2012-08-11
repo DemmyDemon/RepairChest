@@ -78,7 +78,7 @@ public class RepairChestList {
 	}
 	
 	public void add(Block chest,BlockFace signFace){
-		//TODO Stub method!
+		//FIXME Stub method!
 	}
 	
 	
@@ -93,26 +93,26 @@ public class RepairChestList {
 					RepairChest thisChest = new RepairChest(line);
 					chests.add(thisChest);
 					chestLocation.put(thisChest.getLocation(),thisChest);
-					plugin.babble(thisChest.getOwnerName()+"' RepairChest loaded!");
+					plugin.verbose(thisChest.getOwnerName() + "' RepairChest loaded!");
 					chestCount++;
 				}
 				in.close();
-				plugin.babble(chestCount+" repair chests!");
+				plugin.verbose(chestCount + " repair chests!");
 			}
 			catch (FileNotFoundException e) {
 				// Stupid Java... We'll NEVER GET HERE, unless the file stops existing in under a nanosecond!
 				e.printStackTrace();
-				plugin.crap("How the hell did THAT happen?!");
+				plugin.error("How the hell did THAT happen?!");
 			}
 			catch (IOException e) {
 				e.printStackTrace();
-				plugin.crap("IOException reading chest file "+source.getAbsolutePath());
+				plugin.error("IOException reading chest file " + source.getAbsolutePath());
 				if (!source.canRead()){
-					plugin.crap("CAN'T READ FROM "+source.getAbsolutePath());
+					plugin.error("CAN'T READ FROM " + source.getAbsolutePath());
 				}
 			} catch (ParseException e) {
 				e.printStackTrace();
-				plugin.crap("Parse Exception while reading chest file: "+e.getMessage());
+				plugin.error("Parse Exception while reading chest file: " + e.getMessage());
 			}
 		}
 		else {
@@ -121,15 +121,15 @@ public class RepairChestList {
 				source.createNewFile();
 			} catch (IOException e) {
 				e.printStackTrace();
-				plugin.crap("IOException creating chest file "+source.getAbsolutePath());
+				plugin.error("IOException creating chest file " + source.getAbsolutePath());
 				if (!source.canWrite()){
-					plugin.crap("CAN'T WRITE TO "+source.getAbsolutePath());
+					plugin.error("CAN'T WRITE TO " + source.getAbsolutePath());
 				}
 			}
 		}
 	}
 	public void save(){
-		plugin.babble("Saving chests");
+		plugin.verbose("Saving chests");
 		try {
 			if (!source.exists()){
 				source.createNewFile();
@@ -143,12 +143,12 @@ public class RepairChestList {
 		}
 		catch (IOException e){
 			e.printStackTrace();
-			plugin.crap("IOException writing chest file "+source.getAbsolutePath());
+			plugin.error("IOException writing chest file " + source.getAbsolutePath());
 			if (!source.canWrite()){
-				plugin.crap("CAN'T WRITE TO "+source.getAbsolutePath());
+				plugin.error("CAN'T WRITE TO " + source.getAbsolutePath());
 			}
 		}
-		plugin.babble("Saved!");
+		plugin.verbose("Saved!");
 	}
 	public void save(File alternativeChestFile){
 		source = alternativeChestFile;
