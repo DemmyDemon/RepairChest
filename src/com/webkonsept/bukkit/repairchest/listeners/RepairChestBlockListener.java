@@ -1,8 +1,6 @@
 package com.webkonsept.bukkit.repairchest.listeners;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-
+import com.webkonsept.bukkit.repairchest.RepairChestPlugin;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -14,7 +12,8 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.SignChangeEvent;
 
-import com.webkonsept.bukkit.repairchest.RepairChestPlugin;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 public class RepairChestBlockListener implements Listener {
 	private RepairChestPlugin plugin;
@@ -51,7 +50,24 @@ public class RepairChestBlockListener implements Listener {
 					}
 				}
 				else {
-					event.setLine(0,plugin.cfg().tr("chestFirst"));
+                    BlockFace face = plugin.chestList.findChest(event.getBlock().getData());
+                    Block chestCandidate = event.getBlock().getRelative(face);
+                    if (chestCandidate.getType().equals(Material.CHEST)){
+                        if (plugin.permit(player, "repairchest.create")){
+                            player.sendMessage(plugin.cfg().tr("chestAuthorized"));
+                        }
+                        else {
+
+                            event.setLine(0, ""          );
+                            event.setLine(1, "PERMISSION");
+                            event.setLine(2, "DENIED"    );
+                            event.setLine(3, ""          );
+                            player.sendMessage(plugin.cfg().tr("chestDenied"));
+                        }
+                    }
+                    else  {
+					    event.setLine(0,plugin.cfg().tr("chestFirst"));
+                    }
 				}
 			}
 			else if (event.getBlock().getType().equals(Material.SIGN_POST)){

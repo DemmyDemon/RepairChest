@@ -1,22 +1,15 @@
 package com.webkonsept.bukkit.repairchest.storage;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-
+import com.webkonsept.bukkit.repairchest.RepairChestPlugin;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 
-import com.webkonsept.bukkit.repairchest.RepairChestPlugin;
+import java.io.*;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class RepairChestList {
 	protected RepairChestPlugin plugin;
@@ -38,16 +31,16 @@ public class RepairChestList {
 		signTranslate[12] 	= 5;
 		
 		// As SIGN_POST
-		chestSide[0] 	= BlockFace.EAST;
-		chestSide[4] 	= BlockFace.SOUTH;
-		chestSide[8] 	= BlockFace.WEST;
-		chestSide[12]	= BlockFace.NORTH;
+		chestSide[0] 	= BlockFace.NORTH;
+		chestSide[4] 	= BlockFace.EAST;
+		chestSide[8] 	= BlockFace.SOUTH;
+		chestSide[12]	= BlockFace.WEST;
 		
 		// As WALL_SIGN
-		chestSide[2]	= BlockFace.WEST;
-		chestSide[3]	= BlockFace.EAST;
-		// 4 is SOUTH, but that's the same as for SIGN_POST
-		chestSide[5]	= BlockFace.NORTH;
+		chestSide[2]	= BlockFace.SOUTH;
+		chestSide[3]	= BlockFace.NORTH;
+		// 4 is EAST, but that's the same as for SIGN_POST
+		chestSide[5]	= BlockFace.WEST;
 		
 		// Translating "Chest is to the NORTH of the sign" into "Sign is to the SOUTH of the chest"
 		signSide.put(BlockFace.NORTH,BlockFace.SOUTH);
@@ -69,10 +62,19 @@ public class RepairChestList {
 	}
 	
 	public BlockFace findChest(byte b){
+        plugin.verbose("Trying to find a chest.  Got byte "+b);
 		if (b < chestSide.length){
-			return chestSide[b];
+			BlockFace face = chestSide[b];
+            if (face != null){
+                plugin.verbose("Found "+face.toString());
+            }
+            else {
+                plugin.verbose("Does not map to any BlockFace!");
+            }
+            return face;
 		}
 		else {
+            plugin.verbose("Unresolvable");
 			return null;
 		}
 	}
